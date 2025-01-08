@@ -12,3 +12,9 @@ pip install -r requirements.txt
 cd lorenz96_cython
 python setup.py build_ext --inplace
 ```
+
+## Lyapunov exponents
+https://github.com/KotaTakeda/lyapunov
+
+
+## OSSE
