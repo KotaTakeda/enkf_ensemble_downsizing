@@ -1,9 +1,9 @@
 J = 40
 F = 8
 dt = 0.01
-N = 360 * 20 * 10  # Nature run period
+N = 360 * 20 * 20  # Nature run period
 obs_per = 5
-Nt = 1439  # OSSE period
+Nt = N//10  # OSSE period
 T_inf = 500
 r = 1.0
 N_spinup = 500

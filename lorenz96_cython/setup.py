@@ -1,24 +1,18 @@
 """
-Run
-$ python setup.py build_ext --inplace
+Runb
+python setup.py build_ext --inplace
 """
 
-from setuptools import setup
+from setuptools import setup, Extension
 from Cython.Build import cythonize
 import numpy as np
 
-# setup(
-#     ext_modules=cythonize(
-#         "lorenz96_cython.pyx",  # Cythonファイル名
-#         compiler_directives={"language_level": "3"}  # Python 3対応
-#     ),
-#     include_dirs=[np.get_include()],
-# )
+# avoid __init__.py bug
+extensions = [Extension("lorenz96_cython", ["lorenz96_cython.pyx"])]
 
 setup(
     name="lorenz96_cython",
-    ext_modules=cythonize("lorenz96_cython.pyx"),
-    include_dirs=[np.get_include()],
-    package_dir={"lorenz96_cython": "lorenz96_cython"},
+    ext_modules=cythonize(extensions),
+    include_dirs=[np.get_include()],  # include numpy headers
     packages=["lorenz96_cython"],
 )
