@@ -1,0 +1,12 @@
+J = 40
+F = 8
+dt = 0.01
+N = 360 * 20 * 10  # Nature run period
+obs_per = 5
+Nt = 1439  # OSSE period
+T_inf = 500
+r = 1.0
+N_spinup = 500
+m_reduced_list = [12, 13, 14, 15, 16, 17, 18]
+alpha_list = [1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3]
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
