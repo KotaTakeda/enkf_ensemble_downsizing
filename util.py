@@ -1,4 +1,37 @@
+import os
 import numpy as np
+
+
+# Define the function to load the module
+def load_params(path_str):
+    import importlib.util
+
+    # Construct the path to the set_params.py file
+    params_path = os.path.join(path_str, "set_params.py")
+
+    # Load the module
+    spec = importlib.util.spec_from_file_location("set_params", params_path)
+    set_params = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(set_params)
+
+    return set_params
+
+
+def reduce_by_svd(X, m_reduced):
+    # m, Nx = X.shape
+    xmean = X.mean(axis=0)
+    dX = X - xmean[None, :]
+    U, S, _ = np.linalg.svd(dX.T)
+    # print(dX.T.shape, U.shape, Vh.shape)
+    # dX_reduced = np.matmul(U[:, :m_reduced], np.diag(S[:m_reduced])@Vh[:m_reduced, :m_reduced])
+    dX_reduced = U[:, :m_reduced] @ np.diag(S[:m_reduced])  # principal components
+    X_reduced = xmean[None, :] + dX_reduced.T
+    return X_reduced
+
+
+def reduce_by_sample(X, m_reduced):
+    m, _ = X.shape
+    return X[np.random.choice(m, m_reduced)]
 
 
 def compute_traceP(X):
