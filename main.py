@@ -119,16 +119,9 @@ def run_osse(
     # loop length
     print(f"{len(m_reduced_list)*len(alpha_list)*len(seeds)} loops")
     param_list = []
-    reverse = True
     for i, m_reduced in enumerate(m_reduced_list):
-        if reverse:
-            i = len(m_reduced_list) - i - 1
         for j, alpha in enumerate(alpha_list):
-            if reverse:
-                j = len(alpha_list) - j - 1
             for k, seed in enumerate(seeds):
-                if reverse:
-                    k = len(seeds) - k - 1
                 param_dict[(i, j, k)] = (m_reduced, alpha, seed)
                 param_list.append(
                     {
