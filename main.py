@@ -133,8 +133,9 @@ def run_osse(
                 )
                 try:
                     Xa = np.load(filename.format("xa", i, j, k) + ".npy")
-                    print(filename.format("xa", i, j, k) + ".npy loaded")
-                    print("Xa.shape", Xa.shape)
+                    Xa_spinup = np.load(filename.format("xa_spinup", i, j, k) + ".npy")
+                    Xa = [*Xa_spinup, *Xa]
+                    print(filename.format("xa", i, j, k) + ".npy loaded", Xa.shape)
                 except FileNotFoundError:
                     print(i, j, k)
 
@@ -178,8 +179,9 @@ def run_osse(
                     np.save(filename.format("xa", i, j, k), etkf.Xa)
 
                     Xa = [*Xa_spinup, *etkf.Xa]
-                    Xa_dict[(i, j, k)] = Xa
-                    del Xa_spinup, Xa, etkf
+                    del Xa_spinup, etkf
+                Xa_dict[(i, j, k)] = Xa
+                del Xa
     return Xa_dict, param_dict
 
 
@@ -188,7 +190,7 @@ def run_osse(
 # ============================
 
 
-def summarize_results(m_reduced_list, alpha_list, seeds, T_inf, data_dir=""):
+def summarize_results(m_reduced_list, alpha_list, seeds, N_spinup, T_inf, data_dir=""):
     # Load true trajectory
     x_true = np.load(f"{data_dir}/x_true_l96.npy")
 
@@ -236,10 +238,9 @@ def summarize_results(m_reduced_list, alpha_list, seeds, T_inf, data_dir=""):
 
 
 if __name__ == "__main__":
-    # data_dir = "data/r0"
     parser = argparse.ArgumentParser(description="Run OSSE for Lorenz96 model")
     parser.add_argument(
-        "--data_dir", type=str, default="data/r0", help="Directory to save data"
+        "--data_dir", type=str, default="data", help="Directory to save data"
     )
     args = parser.parse_args()
     data_dir = args.data_dir
@@ -265,5 +266,5 @@ if __name__ == "__main__":
         J, F, obs_per, dt, r, N_spinup, m_reduced_list, alpha_list, seeds, data_dir
     )
     df_sup_se, df_rmse, df_ensdim = summarize_results(
-        m_reduced_list, alpha_list, seeds, T_inf, data_dir
+        m_reduced_list, alpha_list, seeds, N_spinup, T_inf, data_dir
     )
