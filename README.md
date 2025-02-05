@@ -18,3 +18,14 @@ https://github.com/KotaTakeda/lyapunov
 
 
 ## OSSE
+Make dir `{data_dir_name}`.
+```sh
+mkdir {data_dir_name}
+```
+
+Make `set_params.py`, arrange parameters in it, and put it in `{data_dir_name}`.
+
+Run `main.py`.
+```sh
+python3 main.py --data_dir={data_dir_name}
+```

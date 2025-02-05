@@ -1,17 +1,12 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 from lorenz96_cython import rk4_cython
 from lorenz96_cython import lorenz96_cython
-from da.l96 import lorenz96
-from da.scheme import rk4
-from da.loss import loss_rms
-from da.visualize import plot_loss
+
 from da.etkf import ETKF
-import visualize as vis
 from util import load_params, reduce_by_svd
 import pandas as pd
-from util import compute_edims, compute_traceP
+from util import compute_edims
 import argparse
 
 
@@ -135,7 +130,7 @@ def run_osse(
                     Xa = np.load(filename.format("xa", i, j, k) + ".npy")
                     Xa_spinup = np.load(filename.format("xa_spinup", i, j, k) + ".npy")
                     Xa = [*Xa_spinup, *Xa]
-                    print(filename.format("xa", i, j, k) + ".npy loaded", Xa.shape)
+                    print(filename.format("xa", i, j, k) + ".npy loaded")
                 except FileNotFoundError:
                     print(i, j, k)
 
@@ -193,6 +188,7 @@ def run_osse(
 def summarize_results(m_reduced_list, alpha_list, seeds, N_spinup, T_inf, data_dir=""):
     # Load true trajectory
     x_true = np.load(f"{data_dir}/x_true_l96.npy")
+    J = x_true.shape[-1]
 
     # Set filename format
     filename = data_dir + "/{}-{}{}{}"
