@@ -2,13 +2,15 @@
 
 
 ## Requirements
-```
+```sh
 pip install git+https://github.com/KotaTakeda/da_py.git@v0.4.5
 pip install -r requirements.txt
 ```
 
+Developed by `Python 3.10.6`.
+
 ## Build
-```
+```sh
 cd lorenz96_cython
 python setup.py build_ext --inplace
 ```
