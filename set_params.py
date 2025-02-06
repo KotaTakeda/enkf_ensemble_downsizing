@@ -1,5 +1,5 @@
 J = 40
-F = 8
+F = 8.0
 dt = 0.01
 N = 360 * 20 * 10  # Nature run period
 obs_per = 5
