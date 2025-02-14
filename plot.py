@@ -5,7 +5,7 @@ import visualize as vis
 from util import load_params
 
 
-def summarize_r(data_dir_r, logr_list):
+def summarize_rm(data_dir_r, logr_list, target_m):
     # load params
     set_params = load_params(
         f"{data_dir_r}/r0"
@@ -37,7 +37,16 @@ def summarize_r(data_dir_r, logr_list):
         sup_se_r[i] = sup_se_opt
 
     J = set_params.J
-    colors = vis.get_color_palette(len(m_reduced_list) + 1, "coolwarm")
+    i_target_m = m_reduced_list.index(target_m)
+    n_m_reduced = len(m_reduced_list)
+    print(f"i_target_m = {i_target_m}, n_m_reduced = {n_m_reduced}")
+    if i_target_m >= n_m_reduced // 2:
+        n_colors = 2 * (i_target_m) + 1
+        print(n_colors)
+        colors = vis.get_color_palette(n_colors, "coolwarm")[:n_m_reduced]
+    else:
+        n_colors = 2 * (n_m_reduced - i_target_m) + 1  # 0, 1, 2, 3, 4, 5, 6
+        colors = vis.get_color_palette(n_colors, "coolwarm")[n_m_reduced - i_target_m :]
     markers = vis.get_marker_cycle()
     fig = plt.figure(figsize=(6, 4))
     for i, m in enumerate(m_reduced_list):
@@ -46,7 +55,7 @@ def summarize_r(data_dir_r, logr_list):
             sup_se_r[:, i],
             label=f"m = {m}",
             marker=next(markers),
-            color=colors[i + 1],
+            color=colors[i],
         )
     plt.plot(
         0.1 ** (np.array(logr_list)),
