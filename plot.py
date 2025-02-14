@@ -45,8 +45,10 @@ def summarize_rm(data_dir_r, logr_list, target_m):
         print(n_colors)
         colors = vis.get_color_palette(n_colors, "coolwarm")[:n_m_reduced]
     else:
-        n_colors = 2 * (n_m_reduced - i_target_m) + 1  # 0, 1, 2, 3, 4, 5, 6
-        colors = vis.get_color_palette(n_colors, "coolwarm")[n_m_reduced - i_target_m :]
+        n_colors = 2 * (n_m_reduced - i_target_m + 1) + 1  # 0, 1, 2, 3, 4, 5, 6
+        colors = vis.get_color_palette(n_colors, "coolwarm")[
+            n_m_reduced - i_target_m - 1 :
+        ]
     markers = vis.get_marker_cycle()
     fig = plt.figure(figsize=(6, 4))
     for i, m in enumerate(m_reduced_list):
