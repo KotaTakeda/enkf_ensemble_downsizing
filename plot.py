@@ -50,29 +50,32 @@ def summarize_rm(data_dir_r, logr_list, target_m):
             n_m_reduced - i_target_m - 1 :
         ]
     markers = vis.get_marker_cycle()
-    fig = plt.figure(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(6, 4))
     for i, m in enumerate(m_reduced_list):
-        plt.plot(
+        ax.plot(
             0.1 ** (np.array(logr_list)),
             sup_se_r[:, i],
             label=f"m = {m}",
             marker=next(markers),
             color=colors[i],
         )
-    plt.plot(
+    ax.plot(
         0.1 ** (np.array(logr_list)),
         J * 0.01 ** (np.array(logr_list)),
         color="black",
-        ls="--",
+        # ls="-",
+        lw=0.5,
         label="obs. noise level",
     )  # Jr^2
     # plt.plot(0.1**(np.array(logr_list)), rho**2*np.ones_like(logr_list), color="black", ls="-", label="$ \\rho^2 $")  # plot attractor radius
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("r")
-    plt.ylabel("worst error")  # limsupE[SE]
-    plt.legend(bbox_to_anchor=(1, 1))
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlabel("r")
+    ax.set_ylabel("worst error")  # limsupE[SE]
+    ax.legend(bbox_to_anchor=(1, 1))
     fig.tight_layout()
 
     # save
     fig.savefig(f"{data_dir_r}/sup_se_r.pdf")
+
+    return fig, ax
