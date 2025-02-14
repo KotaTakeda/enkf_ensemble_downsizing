@@ -249,7 +249,6 @@ def summarize_results(m_reduced_list, alpha_list, seeds, N_spinup, T_inf, data_d
 
     # Set filename format
     filename = data_dir + "/{}-{}{}{}"
-
     try:
         df_sup_se = pd.read_csv(f"{data_dir}/sup_se.csv", index_col=0, header=0)
         df_rmse = pd.read_csv(f"{data_dir}/rmse.csv", index_col=0, header=0)

@@ -29,5 +29,5 @@ Make `set_params.py`, arrange parameters in it, and put it in `{data_dir_name}`.
 
 Run `main.py`.
 ```sh
-python3 main.py --data_dir={data_dir_name}
+python3 main.py --data_dir={data_dir_name} --parallel={parallel_method_name}
 ```
