@@ -160,7 +160,7 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save spin-up data
-            np.save(self.filename.format("xf_spinup", i, j, k), etkf.Xf)
+            # np.save(self.filename.format("xf_spinup", i, j, k), etkf.Xf)
             np.save(self.filename.format("xa_spinup", i, j, k), etkf.Xa)
             Xa_spinup = etkf.Xa
 
@@ -175,7 +175,7 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save data
-            np.save(self.filename.format("xf", i, j, k), etkf.Xf)
+            # np.save(self.filename.format("xf", i, j, k), etkf.Xf)
             np.save(self.filename.format("xa", i, j, k), etkf.Xa)
 
             Xa = [*Xa_spinup, *etkf.Xa]
