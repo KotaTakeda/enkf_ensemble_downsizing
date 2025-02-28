@@ -42,7 +42,7 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
     J = set_params.J
     i_target_m = m_reduced_list.index(target_m)
     n_m_reduced = len(m_reduced_list)
-    print(f"i_target_m = {i_target_m}, n_m_reduced = {n_m_reduced}")
+    # print(f"i_target_m = {i_target_m}, n_m_reduced = {n_m_reduced}")
     if i_target_m >= n_m_reduced // 2:
         n_colors = 2 * (i_target_m) + 1
         print(n_colors)

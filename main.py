@@ -19,8 +19,8 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 def generate_trajectory(J, F, dt, N, data_dir=""):
     # Model params
     print("(J, F):", (J, F))
+    
     # dt: time step size
-    # dt = 0.
     print(f"dt: {dt}")
 
     # N: number of time step, 1 year : 360*20
@@ -281,7 +281,7 @@ class OSSE:
 
                         # RMSE
                         # assert np.allclose(np.sqrt(se_tail), np.linalg.norm(e[T_inf:], axis=-1))  # test
-                        rmse_tmp.append(np.sqrt(se_tail / J))
+                        # rmse_tmp.append(np.sqrt(se_tail / J))
 
                         # tr(P)
                         # traceP_tmp.append(np.mean(np.sqrt(compute_traceP(Xa[T_inf:]) / J)))
@@ -290,9 +290,7 @@ class OSSE:
                         # ensdim_tmp.append(np.mean(compute_edims(Xa[T_inf:])))
 
                     se_tmp = np.array(se_tmp)  # (m, T - T_inf)
-                    rmse_tmp = np.array(rmse_tmp)
-                    assert np.allclose(np.sqrt(se_tmp / J), rmse_tmp)
-                    print("se_tmp = (#seeds, T - T_inf)", se_tmp.shape)
+                    # assert np.allclose(np.sqrt(se_tmp / J), rmse_tmp)
 
                     sup_se[i, j] = np.max(np.mean(se_tmp, axis=0), axis=0)  # sup_t(E[SE])
                     mean_se[i, j] = np.mean(se_tmp)  # mean_t(E[SE])
