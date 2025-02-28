@@ -26,37 +26,43 @@ def generate_trajectory(J, F, dt, N, data_dir=""):
     # N: number of time step, 1 year : 360*20
     print(f"N: {N}")
 
-    # Initial state near the stationary point
-    x0 = F * np.ones(J)  # the stationary point
-    x0[19] *= 1.001  # perturb
+    try:
+        x_true = np.load(f'{data_dir}/x_true_l96.npy')
+        print('x_true_l96 loaded')
+    except FileNotFoundError:
+        # Initial state near the stationary point
+        x0 = F * np.ones(J)  # the stationary point
+        x0[19] *= 1.001  # perturb
 
-    #
-    scheme = rk4_cython
-    # p = (F, )
-    p = (np.ones(J) * F,)
+        #
+        scheme = rk4_cython
+        # p = (F, )
+        p = (np.ones(J) * F,)
 
-    result = np.zeros((N, len(x0)))
-    x = x0
+        result = np.zeros((N, len(x0)))
+        x = x0
 
-    # Spin up 1 year
-    for n in range(1, 360 * 20):
-        t = n * dt
-        # x = scheme(lorenz96, t, x, p, dt) # without using cython
-        x = scheme(lorenz96_cython, t, x, *p, dt)
+        # Spin up 1 year
+        for n in range(1, 360 * 20):
+            t = n * dt
+            # x = scheme(lorenz96, t, x, p, dt) # without using cython
+            x = scheme(lorenz96_cython, t, x, *p, dt)
 
-    # Nature run on the attractor
-    result[0] = x[:]
-    for n in range(1, N):
-        t = n * dt
-        # x = scheme(lorenz96, t, x, p, dt) # without using cython
-        x = scheme(lorenz96_cython, t, x, *p, dt)
-        result[n] = x[:]
+        # Nature run on the attractor
+        result[0] = x[:]
+        for n in range(1, N):
+            t = n * dt
+            # x = scheme(lorenz96, t, x, p, dt) # without using cython
+            x = scheme(lorenz96_cython, t, x, *p, dt)
+            result[n] = x[:]
 
-    # save the result
-    x_true = result[::obs_per]  # save per
+        # save the result
+        x_true = result[::obs_per]  # save per
+        np.save(f"{data_dir}/x_true_l96", x_true)
+        print("save x_true_l96")
+    
     print("x_true.shape", x_true.shape)
-    np.save(f"{data_dir}/x_true_l96", x_true)
-    print("save x_true_l96")
+
     return x_true
 
 
@@ -101,9 +107,6 @@ class OSSE:
         self.r = r
         self.R = r**2 * np.eye(J)
 
-        # Load true trajectory
-        self.x_true = np.load(f"{data_dir}/x_true_l96.npy")
-
         # Initial ensemble size
         self.m0 = J + 1
 
@@ -119,8 +122,15 @@ class OSSE:
         # seeds
         self.seeds = seeds
 
+        # data
+        self.data_dir = data_dir
+
         # Filename format
-        self.filename = data_dir + "/{}-{}{}{}"
+        self.savename = self.data_dir + "/{}-{}{}{}"
+
+        # Load true trajectory
+        # TODO: generate(N, N_spinup)
+        self.x_true = np.load(f"{self.data_dir}/x_true_l96.npy")
 
     def M_cython(self, x, Dt):
         N = int(Dt / self.dt)
@@ -129,13 +139,13 @@ class OSSE:
         if Dt - N * self.dt > 0:
             x = rk4_cython(lorenz96_cython, 0, x, *self.p, Dt - N * self.dt)
         return x
-
+    
     def process(self, i, j, k, m_reduced, alpha, seed):
         try:
-            Xa = np.load(self.filename.format("xa", i, j, k) + ".npy")
-            Xa_spinup = np.load(self.filename.format("xa_spinup", i, j, k) + ".npy")
+            Xa = np.load(self.savename.format("xa", i, j, k) + ".npy")
+            Xa_spinup = np.load(self.savename.format("xa_spinup", i, j, k) + ".npy")
             Xa = [*Xa_spinup, *Xa]
-            print(self.filename.format("xa", i, j, k) + ".npy loaded")
+            print(self.savename.format("xa", i, j, k) + ".npy loaded")
         except FileNotFoundError:
             print(i, j, k)
 
@@ -160,8 +170,8 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save spin-up data
-            # np.save(self.filename.format("xf_spinup", i, j, k), etkf.Xf)
-            np.save(self.filename.format("xa_spinup", i, j, k), etkf.Xa)
+            # np.save(self.savename.format("xf_spinup", i, j, k), etkf.Xf)
+            np.save(self.savename.format("xa_spinup", i, j, k), etkf.Xa)
             Xa_spinup = etkf.Xa
 
             # reduce ensemble
@@ -175,8 +185,8 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save data
-            # np.save(self.filename.format("xf", i, j, k), etkf.Xf)
-            np.save(self.filename.format("xa", i, j, k), etkf.Xa)
+            # np.save(self.savename.format("xf", i, j, k), etkf.Xf)
+            np.save(self.savename.format("xa", i, j, k), etkf.Xa)
 
             Xa = [*Xa_spinup, *etkf.Xa]
             del Xa_spinup, etkf
@@ -235,63 +245,75 @@ class OSSE:
                     )
 
         return Xa_dict, param_dict
+    
 
+    # NOTE: E[se]/J \ge E[RMSE]^2
+    def summarize_results(self, T_inf):
+        """
+        T_inf, integer (>0): compute sup/mean of the errors after t=T_inf, e.g. sup_t(E[SE[T_inf:]]).
+        """
+        try:
+            df_sup_se = pd.read_csv(f"{self.data_dir}/sup_se.csv", index_col=0, header=0)
+            df_mean_se = pd.read_csv(f"{self.data_dir}/mean_se.csv", index_col=0, header=0)
+            df_sup_rmse = pd.read_csv(f"{self.data_dir}/sup_rmse.csv", index_col=0, header=0)
+            df_mean_rmse = pd.read_csv(f"{self.data_dir}/mean_rmse.csv", index_col=0, header=0)
+            # df_ensdim = pd.read_csv(f"{self.data_dir}/ensdim.csv", index_col=0, header=0)
+        except FileNotFoundError:
+            sup_se = np.zeros((len(m_reduced_list), len(alpha_list)))
+            mean_se = np.zeros((len(m_reduced_list), len(alpha_list)))
+            sup_rmse = np.zeros((len(m_reduced_list), len(alpha_list)))
+            mean_rmse = np.zeros((len(m_reduced_list), len(alpha_list)))
+            # traceP = np.zeros((len(m_reduced_list), len(alpha_list)))
+            # ensdim = np.zeros((len(m_reduced_list), len(alpha_list)))
+            for i, _ in enumerate(m_reduced_list):
+                for j, _ in enumerate(alpha_list):
+                    se_tmp = []
+                    rmse_tmp = []
+                    # traceP_tmp = []
+                    # ensdim_tmp = []
+                    print(i, j)
+                    for k, _ in enumerate(seeds):
+                        Xa = np.load(self.savename.format("xa", i, j, k) + ".npy")
+                        se_tail = np.sum((self.x_true[N_spinup:] - Xa.mean(axis=1))[T_inf:] ** 2, axis=-1)
 
-# ============================
-# Summarize
-# ============================
+                        # SE
+                        se_tmp.append(se_tail)  # (T,)
 
+                        # RMSE
+                        # assert np.allclose(np.sqrt(se_tail), np.linalg.norm(e[T_inf:], axis=-1))  # test
+                        rmse_tmp.append(np.sqrt(se_tail / J))
 
-def summarize_results(m_reduced_list, alpha_list, seeds, N_spinup, T_inf, data_dir=""):
-    # Load true trajectory
-    x_true = np.load(f"{data_dir}/x_true_l96.npy")
-    J = x_true.shape[-1]
+                        # tr(P)
+                        # traceP_tmp.append(np.mean(np.sqrt(compute_traceP(Xa[T_inf:]) / J)))
 
-    # Set filename format
-    filename = data_dir + "/{}-{}{}{}"
-    try:
-        df_sup_se = pd.read_csv(f"{data_dir}/sup_se.csv", index_col=0, header=0)
-        df_rmse = pd.read_csv(f"{data_dir}/rmse.csv", index_col=0, header=0)
-        df_ensdim = pd.read_csv(f"{data_dir}/ensdim.csv", index_col=0, header=0)
-    except FileNotFoundError:
-        sup_se = np.zeros((len(m_reduced_list), len(alpha_list)))
-        rmse = np.zeros((len(m_reduced_list), len(alpha_list)))
-        # traceP = np.zeros((len(m_reduced_list), len(alpha_list)))
-        ensdim = np.zeros((len(m_reduced_list), len(alpha_list)))
-        for i, _ in enumerate(m_reduced_list):
-            for j, _ in enumerate(alpha_list):
-                se_tmp = []
-                rmse_tmp = []
-                # traceP_tmp = []
-                ensdim_tmp = []
-                print(i, j)
-                for k, _ in enumerate(seeds):
-                    Xa = np.load(filename.format("xa", i, j, k) + ".npy")
-                    e = x_true[N_spinup:] - Xa.mean(axis=1)
+                        # D_ens
+                        # ensdim_tmp.append(np.mean(compute_edims(Xa[T_inf:])))
 
-                    se_tmp.append(np.sum(e[T_inf:] ** 2, axis=-1))  # (T,)
-                    rmse_tmp.append(
-                        np.mean(np.linalg.norm(e[T_inf:], axis=-1) / np.sqrt(J))
-                    )
-                    # traceP_tmp.append(np.mean(np.sqrt(compute_traceP(Xa[T_inf:]) / J)))
-                    ensdim_tmp.append(np.mean(compute_edims(Xa[T_inf:])))
+                    se_tmp = np.array(se_tmp)  # (m, T - T_inf)
+                    rmse_tmp = np.array(rmse_tmp)
+                    assert np.allclose(np.sqrt(se_tmp / J), rmse_tmp)
+                    print("se_tmp = (#seeds, T - T_inf)", se_tmp.shape)
 
-                sup_se[i, j] = np.max(
-                    np.mean(np.array(se_tmp), axis=0), axis=0
-                )  # sup_t(E[SE])
-                rmse[i, j] = np.mean(rmse_tmp)  # E[mean_t(RMSE)]
-                # traceP[i, j] = np.mean(traceP_tmp)  # E[mean_t(tr(Pa))]
-                ensdim[i, j] = np.mean(ensdim_tmp)  # E[mean_t(D_ens)]
+                    sup_se[i, j] = np.max(np.mean(se_tmp, axis=0), axis=0)  # sup_t(E[SE])
+                    mean_se[i, j] = np.mean(se_tmp)  # mean_t(E[SE])
+                    sup_rmse[i, j] = np.max(np.mean(np.sqrt(se_tmp / self.J), axis=0), axis=0)  # sup_t(E[RMSE])
+                    mean_rmse[i, j] = np.mean(np.sqrt(se_tmp / self.J))  # mean_t(E[RMSE])
+                    # traceP[i, j] = np.mean(traceP_tmp)  # E[mean_t(tr(Pa))]
+                    # ensdim[i, j] = np.mean(ensdim_tmp)  # E[mean_t(D_ens)]
 
-        df_sup_se = pd.DataFrame(sup_se, index=m_reduced_list, columns=alpha_list)
-        df_rmse = pd.DataFrame(rmse, index=m_reduced_list, columns=alpha_list)
-        # df_traceP = pd.DataFrame(traceP, index=m_reduced_list, columns=alpha_list)
-        df_ensdim = pd.DataFrame(ensdim, index=m_reduced_list, columns=alpha_list)
+            df_sup_se = pd.DataFrame(sup_se, index=m_reduced_list, columns=alpha_list)
+            df_mean_se = pd.DataFrame(mean_se, index=m_reduced_list, columns=alpha_list)
+            df_sup_rmse = pd.DataFrame(sup_rmse, index=m_reduced_list, columns=alpha_list)
+            df_mean_rmse = pd.DataFrame(mean_rmse, index=m_reduced_list, columns=alpha_list)
+            # df_traceP = pd.DataFrame(traceP, index=m_reduced_list, columns=alpha_list)
+            # df_ensdim = pd.DataFrame(ensdim, index=m_reduced_list, columns=alpha_list)
 
-        df_sup_se.to_csv(data_dir + "/" + "sup_se" + ".csv")
-        df_rmse.to_csv(data_dir + "/" + "rmse" + ".csv")
-        df_ensdim.to_csv(data_dir + "/" + "ensdim" + ".csv")
-    return df_sup_se, df_rmse, df_ensdim
+            df_sup_se.to_csv(self.data_dir + "/" + "sup_se" + ".csv")
+            df_sup_rmse.to_csv(self.data_dir + "/" + "sup_rmse" + ".csv")
+            df_mean_se.to_csv(self.data_dir + "/" + "mean_se" + ".csv")
+            df_mean_rmse.to_csv(self.data_dir + "/" + "mean_rmse" + ".csv")
+            # df_ensdim.to_csv(self.data_dir + "/" + "ensdim" + ".csv")
+        return df_sup_se, df_sup_rmse, df_mean_se, df_mean_rmse
 
 
 if __name__ == "__main__":
@@ -322,11 +344,9 @@ if __name__ == "__main__":
     alpha_list = set_params.alpha_list
     seeds = set_params.seeds
 
-    x_true = generate_trajectory(J, F, dt, N, data_dir)
-    # Xa_dict, param_dict = run_osse(
-    #     J, F, obs_per, dt, r, N_spinup, m_reduced_list, alpha_list, seeds, data_dir
-    # )
-    Xa_dict, param_dict = OSSE(
+    _ = generate_trajectory(J, F, dt, N, data_dir)
+
+    osse = OSSE(
         J,
         F,
         obs_per,
@@ -337,7 +357,6 @@ if __name__ == "__main__":
         alpha_list,
         seeds,
         data_dir=data_dir,
-    ).run(parallel=parallel)
-    df_sup_se, df_rmse, df_ensdim = summarize_results(
-        m_reduced_list, alpha_list, seeds, N_spinup, T_inf, data_dir
     )
+    _ = osse.run(parallel=parallel)
+    _ = osse.summarize_results(T_inf)

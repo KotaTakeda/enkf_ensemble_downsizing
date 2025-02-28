@@ -5,7 +5,10 @@ import visualize as vis
 from util import load_params
 
 
-def summarize_rm(data_dir_r, logr_list, target_m):
+def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
+    """
+    error_type, str: filename of the error. ["sup_se", "mean_se", "sup_rmse", "mean_rmse"].
+    """
     # load params
     set_params = load_params(
         f"{data_dir_r}/r0"
@@ -16,8 +19,8 @@ def summarize_rm(data_dir_r, logr_list, target_m):
     # x_true = np.load(f'{data_dir_r.format(logr_list[0])}/x_true_l96.npy')
     # rho = 2*np.linalg.norm(x_true, axis=-1).mean()  # time-averaged 2-norm of x_true
 
-    rmse_r = np.zeros((len(logr_list), len(m_reduced_list)))
-    sup_se_r = np.zeros((len(logr_list), len(m_reduced_list)))
+    # rmse_r = np.zeros((len(logr_list), len(m_reduced_list)))
+    error_r = np.zeros((len(logr_list), len(m_reduced_list)))
     for i, logr in enumerate(logr_list):
         dir = f"{data_dir_r}/r{logr}"
         print(dir)
@@ -26,15 +29,15 @@ def summarize_rm(data_dir_r, logr_list, target_m):
         set_params = load_params(dir)
 
         # load data
-        df_rmse = pd.read_csv(dir + "/rmse.csv", index_col=0, header=0)
-        df_sup_se = pd.read_csv(dir + "/sup_se.csv", index_col=0, header=0)
-        # print(df_sup_se)
+        # df_mean_rmse = pd.read_csv(dir + "/mean_rmse.csv", index_col=0, header=0)
+        df_error = pd.read_csv(dir + f"/{error_type}.csv", index_col=0, header=0)
+        # print(df_error)
 
         # optimal for each m
-        rmse_opt = df_rmse.to_numpy().min(axis=1)  # (len(m_reduced_list), )
-        sup_se_opt = df_sup_se.to_numpy().min(axis=1)  # (len(m_reduced_list), )
-        rmse_r[i] = rmse_opt
-        sup_se_r[i] = sup_se_opt
+        # rmse_opt = df_mean_rmse.to_numpy().min(axis=1)  # (len(m_reduced_list), )
+        error_opt = df_error.to_numpy().min(axis=1)  # (len(m_reduced_list), )
+        # rmse_r[i] = rmse_opt
+        error_r[i] = error_opt
 
     J = set_params.J
     i_target_m = m_reduced_list.index(target_m)
@@ -54,7 +57,7 @@ def summarize_rm(data_dir_r, logr_list, target_m):
     for i, m in enumerate(m_reduced_list):
         ax.plot(
             0.1 ** (np.array(logr_list)),
-            sup_se_r[:, i],
+            error_r[:, i],
             label=f"m = {m}",
             marker=next(markers),
             color=colors[i],
@@ -71,11 +74,8 @@ def summarize_rm(data_dir_r, logr_list, target_m):
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("r")
-    ax.set_ylabel("worst error")  # limsupE[SE]
+    ax.set_ylabel("error")
     ax.legend(bbox_to_anchor=(1, 1))
     fig.tight_layout()
-
-    # save
-    fig.savefig(f"{data_dir_r}/sup_se_r.pdf")
 
     return fig, ax

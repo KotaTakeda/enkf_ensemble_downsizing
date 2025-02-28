@@ -175,3 +175,6 @@ data/
 
 # DS
 .DS_Store
+
+# VSCode
+.vscode
