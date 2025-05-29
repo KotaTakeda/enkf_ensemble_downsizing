@@ -190,7 +190,7 @@ class OSSE:
 
             Xa = [*Xa_spinup, *etkf.Xa]
             del Xa_spinup, etkf
-        return Xa
+        return Xa # FIXME: high memory usage
 
     # Run OSSE
     def run(self, parallel="none"):
@@ -244,7 +244,7 @@ class OSSE:
                         param_list[i]["seed"],
                     )
 
-        return Xa_dict, param_dict
+        return Xa_dict, param_dict # FIXME: high memory usage
     
 
     # NOTE: E[se]/J \ge E[RMSE]^2
@@ -268,7 +268,7 @@ class OSSE:
             for i, _ in enumerate(m_reduced_list):
                 for j, _ in enumerate(alpha_list):
                     se_tmp = []
-                    rmse_tmp = []
+                    # rmse_tmp = []
                     # traceP_tmp = []
                     # ensdim_tmp = []
                     print(i, j)
@@ -289,6 +289,8 @@ class OSSE:
                         # D_ens
                         # ensdim_tmp.append(np.mean(compute_edims(Xa[T_inf:])))
 
+                        del Xa
+
                     se_tmp = np.array(se_tmp)  # (m, T - T_inf)
                     # assert np.allclose(np.sqrt(se_tmp / J), rmse_tmp)
 
@@ -298,6 +300,8 @@ class OSSE:
                     mean_rmse[i, j] = np.mean(np.sqrt(se_tmp / self.J))  # mean_t(E[RMSE])
                     # traceP[i, j] = np.mean(traceP_tmp)  # E[mean_t(tr(Pa))]
                     # ensdim[i, j] = np.mean(ensdim_tmp)  # E[mean_t(D_ens)]
+
+                    del se_tmp
 
             df_sup_se = pd.DataFrame(sup_se, index=m_reduced_list, columns=alpha_list)
             df_mean_se = pd.DataFrame(mean_se, index=m_reduced_list, columns=alpha_list)
