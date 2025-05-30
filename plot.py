@@ -9,10 +9,10 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
     """
     Summarize the error for different r and m_reduced.
     Args:
-        data_dir_r: str, directory where the data is stored. e.g. "data/l96/r{logr}".
-        logr_list: list of float, list of logr values.
-        target_m: int, target m_reduced value.
-        error_type: str, filename of the error. ["sup_se", "mean_se", "sup_rmse", "mean_rmse"].
+        data_dir_r (str): directory where the data is stored. e.g. "data/l96/r{logr}".
+        logr_list (list of float): list of logr values.
+        target_m (int): target m_reduced value.
+        error_type (str): filename of the error. ["sup_se", "mean_se", "sup_rmse", "mean_rmse"].
     Returns:
         fig, ax: matplotlib figure and axis objects.
     """

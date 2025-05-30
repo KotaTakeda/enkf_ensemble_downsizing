@@ -1,6 +1,30 @@
 import os
 import numpy as np
 
+# Save and load numpy arrays with specified precision
+def npsave(savename, array, precision='float32'):
+    """
+    Save a numpy array to a file with the specified precision.
+    
+    Args:
+        savename (str): The name of the file to save the array to.
+        array (array-like): The array to save.
+    precision (str): The precision to use when saving the array. Default is 'float32'.
+    """
+    savearray = np.array(array, dtype=precision)
+    np.save(savename, savearray)
+
+def npload(savename, precision='float64'):
+    """
+    Load a numpy array from a file with the specified precision.
+    
+    Args:
+        savename (str): The name of the file to load the array from.
+    
+    Returns:
+        np.ndarray: The loaded numpy array.
+    """
+    return np.load(savename).astype(precision)
 
 # Define the function to load the module
 def load_params(path_str):
@@ -16,7 +40,7 @@ def load_params(path_str):
 
     return set_params
 
-
+# Ensemble reduction
 def reduce_by_svd(X, m_reduced):
     # m, Nx = X.shape
     xmean = X.mean(axis=0)
@@ -34,6 +58,7 @@ def reduce_by_sample(X, m_reduced):
     return X[np.random.choice(m, m_reduced)]
 
 
+# Compute metrics
 def compute_traceP(X):
     # X: (T, Ne, Nx)
     trP = []

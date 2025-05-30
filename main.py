@@ -4,7 +4,7 @@ from lorenz96_cython import rk4_cython
 from lorenz96_cython import lorenz96_cython
 
 from da.etkf import ETKF
-from util import load_params, reduce_by_svd
+from util import load_params, reduce_by_svd, npsave, npload
 import pandas as pd
 from util import compute_edims
 import argparse
@@ -26,8 +26,9 @@ def generate_trajectory(J, F, dt, N, data_dir=""):
     # N: number of time step, 1 year : 360*20
     print(f"N: {N}")
 
+    savename = f'{data_dir}/x_true_l96'
     try:
-        x_true = np.load(f'{data_dir}/x_true_l96.npy')
+        x_true = npload(savename + ".npy", precision="float64")
         print('x_true_l96 loaded')
     except FileNotFoundError:
         # Initial state near the stationary point
@@ -58,12 +59,12 @@ def generate_trajectory(J, F, dt, N, data_dir=""):
 
         # save the result
         x_true = result[::obs_per]  # save per
-        np.save(f"{data_dir}/x_true_l96", x_true)
-        print("save x_true_l96")
+        npsave(savename, x_true, precision="float32")
+        print("save", savename + ".npy")
     
     print("x_true.shape", x_true.shape)
 
-    return x_true
+    return savename
 
 
 # ============================
@@ -84,6 +85,7 @@ class OSSE:
         alpha_list,
         seeds,
         data_dir="",
+        savename_x_true=None,
     ):
         # Model parameters
         self.J = J
@@ -129,8 +131,10 @@ class OSSE:
         self.savename = self.data_dir + "/{}-{}{}{}"
 
         # Load true trajectory
-        # TODO: generate(N, N_spinup)
-        self.x_true = np.load(f"{self.data_dir}/x_true_l96.npy")
+        if savename_x_true is None:
+            savename_x_true = generate_trajectory(
+                J, F, dt, N, data_dir=self.data_dir)
+        self.x_true = npload(savename_x_true + ".npy", precision="float64")
 
     def M_cython(self, x, Dt):
         N = int(Dt / self.dt)
@@ -141,12 +145,12 @@ class OSSE:
         return x
     
     def process(self, i, j, k, m_reduced, alpha, seed):
+        save_names = {"xa": self.savename.format("xa", i, j, k), "xa_spinup": self.savename.format("xa_spinup", i, j, k)}
         try:
-            Xa = np.load(self.savename.format("xa", i, j, k) + ".npy")
-            Xa_spinup = np.load(self.savename.format("xa_spinup", i, j, k) + ".npy")
-            Xa = [*Xa_spinup, *Xa]
-            print(self.savename.format("xa", i, j, k) + ".npy loaded")
-        except FileNotFoundError:
+            npload(save_names["xa"] + ".npy", precision="float64")
+            npload(save_names["xa_spinup"] + ".npy", precision="float64")
+            print(save_names["xa"] + ".npy loaded")
+        except (FileNotFoundError, EOFError, ValueError):
             print(i, j, k)
 
             np.random.seed(seed)
@@ -170,9 +174,9 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save spin-up data
-            # np.save(self.savename.format("xf_spinup", i, j, k), etkf.Xf)
-            np.save(self.savename.format("xa_spinup", i, j, k), etkf.Xa)
-            Xa_spinup = etkf.Xa
+            # npsave(self.savename.format("xf_spinup", i, j, k), etkf.Xf, precision="float32")
+            npsave(save_names["xa_spinup"], etkf.Xa, precision="float32")
+            # Xa_spinup = etkf.Xa
 
             # reduce ensemble
             X_reduced = reduce_by_svd(etkf.X, m_reduced)  # by SVD
@@ -185,12 +189,11 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save data
-            # np.save(self.savename.format("xf", i, j, k), etkf.Xf)
-            np.save(self.savename.format("xa", i, j, k), etkf.Xa)
+            # npsave(self.savename.format("xf", i, j, k), etkf.Xf, precision="float32")
+            npsave(save_names["xa"], etkf.Xa, precision="float32")
 
-            Xa = [*Xa_spinup, *etkf.Xa]
-            del Xa_spinup, etkf
-        return Xa # FIXME: high memory usage
+            del etkf
+        return save_names # FIXME: high memory usage
 
     # Run OSSE
     def run(self, parallel="none"):
@@ -214,8 +217,9 @@ class OSSE:
                         )
                         param_dict[(i, j, k)] = (m_reduced, alpha, seed)
         else:
+            max_workers = 4  # Set the number of workers
             executor = (
-                ProcessPoolExecutor() if parallel == "mp" else ThreadPoolExecutor()
+                ProcessPoolExecutor(max_workers=max_workers) if parallel == "mp" else ThreadPoolExecutor(max_workers=max_workers)  # Multi-threading is not supported in this case
             )
             with executor as exe:
                 features = []
@@ -237,6 +241,7 @@ class OSSE:
                                 }
                             )
                 for i, f in enumerate(features):
+                    print(f.result())
                     Xa_dict[param_list[i]["idx"]] = f.result()
                     param_dict[param_list[i]["idx"]] = (
                         param_list[i]["m_reduced"],
@@ -250,7 +255,7 @@ class OSSE:
     # NOTE: E[se]/J \ge E[RMSE]^2
     def summarize_results(self, T_inf):
         """
-        T_inf, integer (>0): compute sup/mean of the errors after t=T_inf, e.g. sup_t(E[SE[T_inf:]]).
+        T_inf: (int > 0): compute sup/mean of the errors after t=T_inf, e.g. sup_t(E[SE[T_inf:]]).
         """
         try:
             df_sup_se = pd.read_csv(f"{self.data_dir}/sup_se.csv", index_col=0, header=0)
@@ -273,7 +278,7 @@ class OSSE:
                     # ensdim_tmp = []
                     print(i, j)
                     for k, _ in enumerate(seeds):
-                        Xa = np.load(self.savename.format("xa", i, j, k) + ".npy")
+                        Xa = npload(self.savename.format("xa", i, j, k) + ".npy", precision="float64")
                         se_tail = np.sum((self.x_true[N_spinup:] - Xa.mean(axis=1))[T_inf:] ** 2, axis=-1)
 
                         # SE
@@ -346,7 +351,7 @@ if __name__ == "__main__":
     alpha_list = set_params.alpha_list
     seeds = set_params.seeds
 
-    _ = generate_trajectory(J, F, dt, N, data_dir)
+    savename_x_true = generate_trajectory(J, F, dt, N, data_dir)
 
     osse = OSSE(
         J,
@@ -359,6 +364,7 @@ if __name__ == "__main__":
         alpha_list,
         seeds,
         data_dir=data_dir,
+        savename_x_true=savename_x_true,
     )
     _ = osse.run(parallel=parallel)
     _ = osse.summarize_results(T_inf)
