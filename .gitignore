@@ -178,3 +178,7 @@ data/
 
 # VSCode
 .vscode
+
+# shell scripts
+sh/
+*.sh
