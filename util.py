@@ -46,7 +46,6 @@ def reduce_by_svd(X, m_reduced):
     xmean = X.mean(axis=0)
     dX = X - xmean[None, :]
     U, S, _ = np.linalg.svd(dX.T)
-    # print(dX.T.shape, U.shape, Vh.shape)
     # dX_reduced = np.matmul(U[:, :m_reduced], np.diag(S[:m_reduced])@Vh[:m_reduced, :m_reduced])
     dX_reduced = U[:, :m_reduced] @ np.diag(S[:m_reduced])  # principal components
     X_reduced = xmean[None, :] + dX_reduced.T
