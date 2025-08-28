@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import scipy as sp
 
 # Save and load numpy arrays with specified precision
 def npsave(savename, array, precision='float32'):
@@ -41,18 +42,40 @@ def load_params(path_str):
     return set_params
 
 # Ensemble reduction
-def reduce_by_svd(X, m_reduced):
+def reduce_by_svd(X, m_reduced, method="helmert"):
+    """
+    Reduce the ensemble size using SVD.
+    If method="helmert", the reduction keeps the ensemble mean.
+    Args:
+        X: (m, Nx) array of ensemble vectors
+        m_reduced: reduced ensemble size
+        method: "helmert" or None. 
+    Returns:
+        X_reduced: (m_reduced, Nx) array of reduced ensemble vectors
+    """
     # m, Nx = X.shape
     xmean = X.mean(axis=0)
     dX = X - xmean[None, :]
-    U, S, _ = np.linalg.svd(dX.T)
-    # dX_reduced = np.matmul(U[:, :m_reduced], np.diag(S[:m_reduced])@Vh[:m_reduced, :m_reduced])
-    dX_reduced = U[:, :m_reduced] @ np.diag(S[:m_reduced])  # principal components
+    U, S, _ = sp.linalg.svd(dX.T)
+    if method=="helmert":
+        Q = sp.linalg.helmert(m_reduced) #(m_reduced - 1, m_reduced)
+        dX_reduced = U[:, :m_reduced-1] @ np.diag(S[:m_reduced-1]) @ Q # (Nx, m_reduced), mean zero
+    else:
+        dX_reduced = U[:, :m_reduced] @ np.diag(S[:m_reduced])  # (Nx, m_reduced), principal components
     X_reduced = xmean[None, :] + dX_reduced.T
     return X_reduced
 
 
 def reduce_by_sample(X, m_reduced):
+    """
+    Reduce the ensemble size using random sampling.
+    This method does not keep the ensemble mean.
+    Args:
+        X: (m, Nx) array of ensemble vectors
+        m_reduced: reduced ensemble size
+    Returns:
+        X_reduced: (m_reduced, Nx) array of reduced ensemble vectors
+    """
     m, _ = X.shape
     return X[np.random.choice(m, m_reduced)]
 

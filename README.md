@@ -15,7 +15,7 @@ cd lorenz96_cython
 python setup.py build_ext --inplace
 ```
 
-## Lyapunov exponents
+## Computing Lyapunov exponents
 https://github.com/KotaTakeda/lyapunov
 
 
