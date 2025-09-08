@@ -182,3 +182,6 @@ data/
 # shell scripts
 sh/
 *.sh
+
+# Local Python
+.python-version
