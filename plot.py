@@ -77,12 +77,24 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
         lw=0.5,
         label="obs. noise level",
     )  # Jr^2
-    # plt.plot(0.1**(np.array(logr_list)), rho**2*np.ones_like(logr_list), color="black", ls="-", label="$ \\rho^2 $")  # plot attractor radius
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("r")
     ax.set_ylabel("error")
+    ax.set_ylabel(_error_title(error_type))
+    ax.set_title("error vs. $r$ for different $m$")
     ax.legend(bbox_to_anchor=(1, 1))
     fig.tight_layout()
 
     return fig, ax
+
+
+def _error_title(error_type):
+    """Convert error_type string to a plot title."""
+    title_map = {
+        "sup_se": r"$\sup_{n \rightarrow \infty} \mathbb{E}[SE_n]$",
+        "mean_se": r"$\operatorname{mean}_n \mathbb{E}[SE_n]$",
+        "sup_rmse": r"$\sup_{n \rightarrow \infty} \mathbb{E}[RMSE_n]$",
+        "mean_rmse": r"$\operatorname{mean}_n \mathbb{E}[RMSE_n]$",
+    }
+    return title_map.get(error_type, "Error")

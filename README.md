@@ -31,3 +31,8 @@ Run `main.py`.
 ```sh
 python3 main.py --data_dir={data_dir_name} --parallel={parallel_method_name}
 ```
+
+<!-- 
+### Parameters
+
+|Parameter|Value|Description| -->
