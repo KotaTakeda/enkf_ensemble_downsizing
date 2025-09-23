@@ -1,0 +1,3 @@
+[submodule "lyapunov"]
+	path = lyapunov
+	url = https://github.com/KotaTakeda/lyapunov
