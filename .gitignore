@@ -180,8 +180,8 @@ data/
 .vscode
 
 # shell scripts
-sh/
-*.sh
+# sh/
+# *.sh
 
 # Local Python
 .python-version
