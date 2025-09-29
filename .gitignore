@@ -172,6 +172,7 @@ cython_debug/
 
 # data
 data/
+*.pdf
 
 # DS
 .DS_Store
