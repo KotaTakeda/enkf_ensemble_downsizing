@@ -1,9 +1,9 @@
 git+https://github.com/KotaTakeda/da_py.git@v0.4.5
-numpy==2.2.1
-scipy==1.15.0
+numpy==1.26.4
+scipy==1.13.1
 pandas==2.2.3
 jupyter==1.1.1
-matplotlib==3.10.0
+matplotlib==3.9.4
 seaborn==0.13.2
 tqdm==4.67.1
 cython==3.0.11

@@ -28,6 +28,7 @@ where \(N_+\) is the number of positive Lyapunov exponents.
 
 ### Requirements
 ```sh
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
