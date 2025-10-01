@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.c
 
 # Distribution / packaging
 .Python
@@ -170,9 +171,14 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+
 # data
-data/
 *.pdf
+*.npy
+*.csv
+data/*/*.md
+data/case2-2
+data/case3-1
 
 # DS
 .DS_Store
