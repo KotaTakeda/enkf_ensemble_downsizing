@@ -11,7 +11,7 @@
 # alpha_list = [1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3]
 # seeds = [n for n in range(10)]
 
-
+# light test
 J = 40
 F = 8
 dt = 0.01

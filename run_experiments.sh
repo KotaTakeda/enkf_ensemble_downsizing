@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Run ensemble downsizing experiments for the paper
 # Each case corresponds to a figure in the manuscript
 # Results are saved under data/case*/ and figures/ directories

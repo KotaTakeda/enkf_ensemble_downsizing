@@ -1,3 +1,4 @@
+# !/bin/sh
 # Run Lyapunov analysis from the submodule
 # Results are stored in data/case1_lyapunov and data/case3_lyapunov
 
