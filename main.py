@@ -16,7 +16,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 # ============================
 
 
-def generate_trajectory(J, F, dt, N, data_dir=""):
+def generate_trajectory(J, F, dt, N, save_per, data_dir=""):
     # Model params
     print("(J, F):", (J, F))
 
@@ -58,7 +58,7 @@ def generate_trajectory(J, F, dt, N, data_dir=""):
             result[n] = x[:]
 
         # save the result
-        x_true = result[::obs_per]  # save per
+        x_true = result[::save_per]  # save per
         npsave(savename, x_true, precision="float32")
         print("save", savename + ".npy")
 
@@ -132,7 +132,9 @@ class OSSE:
 
         # Load true trajectory
         if savename_x_true is None:
-            savename_x_true = generate_trajectory(J, F, dt, N, data_dir=self.data_dir)
+            savename_x_true = generate_trajectory(
+                J, F, dt, N, save_per=obs_per, data_dir=self.data_dir
+            )
         self.x_true = npload(savename_x_true + ".npy", precision="float64")
 
     def M_cython(self, x, Dt):
@@ -385,7 +387,7 @@ if __name__ == "__main__":
     alpha_list = set_params.alpha_list
     seeds = set_params.seeds
 
-    savename_x_true = generate_trajectory(J, F, dt, N, data_dir)
+    savename_x_true = generate_trajectory(J, F, dt, N, obs_per, data_dir)
 
     osse = OSSE(
         J,
