@@ -212,7 +212,7 @@ def plot_time_series(
             ax.plot(
                 t,
                 rmse[::plot_per],
-                label=f"ETKF-reduce({m0}→{m_reduced}) $\\alpha$={alpha}",
+                label=f"ETKF-reduce({m0}$\\rightarrow${m_reduced}) $\\alpha$={alpha}",
                 lw=0.8,
                 marker=marker,
                 color=colors[j],
@@ -269,12 +269,12 @@ def plot_fig6():
 
 def plot_fig3():
     """
-    Plot Figure 3: time series for case2/N2 and case2/N0, stack vertically, add (a) and (b).
+    Plot Figure 3: time series for case2/N1 and case2/N0, stack vertically, add (a) and (b).
     """
     fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
-    # First subplot: case2/N2, m=15, all alphas
+    # First subplot: case2/N1, m=15, all alphas
     plot_time_series(
-        data_dir="data/case2/N2",
+        data_dir="data/case2/N1",
         target_m_list=[15],
         target_alpha_list=None,  # all alphas
         plot_type="one sample",

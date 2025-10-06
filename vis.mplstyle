@@ -14,6 +14,7 @@ lines.markeredgewidth : 0.75
 ## http://matplotlib.org/api/font_manager_api.html for more
 ## information on font properties.
 font.family          : serif # Times New Roman, sans-serif
+font.serif           : Times
 font.size            : 20.0
 
 #### TEXT
@@ -25,8 +26,8 @@ font.size            : 20.0
 #### LaTeX
 ## See http://wiki.scipy.org/Cookbook/Matplotlib/UsingTex
 text.usetex         : True
-text.latex.preamble : \usepackage{amsmath, amssymb} \usepackage{bm} \renewcommand{\familydefault}{\sfdefault}
-mathtext.fontset    : stix # [dejavusans, dejavuserif, stix, stixsans, cm]
+text.latex.preamble : \usepackage{amsmath, amssymb} \usepackage{bm}
+mathtext.fontset    : cm # [dejavusans, dejavuserif, stix, stixsans, cm]
 
 #### AXES
 ## default face and edge color, default tick sizes,
@@ -77,4 +78,4 @@ savefig.dpi          : figure   ## figure dots per inch or 'figure'
 savefig.format       : pdf      ## png, ps, pdf, svg
 
 ### PDF backend params
-# pdf.fonttype:      42  # Output Type 3 (Type3) or Type 42 (TrueType)
+pdf.fonttype:      42  # Output Type 3 (Type3) or Type 42 (TrueType)
