@@ -78,7 +78,7 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
     )  # Jr^2
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_xlabel("r")
+    ax.set_xlabel("$r$")
     ax.set_ylabel("error")
     ax.set_ylabel(_error_title(error_type))
     ax.set_title("error vs. $r$ for different $m$")
