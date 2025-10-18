@@ -21,5 +21,5 @@ T_inf = N // obs_per // 2
 r = 1e-2  # Std. of obs. noise
 N_spinup = 45 * 20 // obs_per  # Ensemble spin-up
 m_reduced_list = [13, 14, 15]
-alpha_list = [1.1]
+alpha_list = [1.0]
 seeds = [n for n in range(1)]
