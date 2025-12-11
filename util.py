@@ -40,6 +40,28 @@ def load_params(path_str):
 
     return set_params
 
+# Estimate data size
+def estimate_data_size(params):
+    """Estimate the total data size in GB based on the parameters (ignored: true trajectory, observation, spin-up ensemble)."""
+    dimension = params.J
+    bytes_per_point = 8  # float64
+    total_save_steps = params.N // params.obs_per
+    num_ensemble_members = sum(params.m_reduced_list)
+    num_seeds = len(params.seeds)
+    num_param_variations = len(params.alpha_list)
+
+    total_bytes = (
+        bytes_per_point *
+        dimension *
+        total_save_steps *
+        num_ensemble_members *
+        num_seeds *
+        num_param_variations
+    )
+
+    total_gb = total_bytes / (1000**3)
+    return total_gb
+
 # Ensemble reduction
 def reduce_by_svd(X, m_reduced):
     # m, Nx = X.shape

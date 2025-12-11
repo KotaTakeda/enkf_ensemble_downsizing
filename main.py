@@ -6,7 +6,7 @@ from lorenz96_cython import lorenz96_cython
 from da.etkf import ETKF
 from util import load_params, reduce_by_svd, npsave, npload
 import pandas as pd
-from util import compute_edims
+from util import compute_edims, estimate_data_size
 import argparse
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
@@ -373,6 +373,8 @@ if __name__ == "__main__":
 
     # Use the function to load the parameters
     set_params = load_params(data_dir)
+    total_size_gb = estimate_data_size(set_params)
+    print(f"Estimated data size: {total_size_gb:.2f} GB")
 
     # Access the parameters
     J = set_params.J
