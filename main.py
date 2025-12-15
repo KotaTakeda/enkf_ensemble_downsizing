@@ -86,6 +86,7 @@ class OSSE:
         seeds,
         data_dir="",
         savename_x_true=None,
+        accurate_initialization=False, # whether to use accurate initialization (not used)
     ):
         # Model parameters
         self.J = J
@@ -137,6 +138,9 @@ class OSSE:
             )
         self.x_true = npload(savename_x_true + ".npy", precision="float64")
 
+        # accurate initialization
+        self.accurate_initialization = accurate_initialization
+
     def M_cython(self, x, Dt):
         N = int(Dt / self.dt)
         for _ in range(N):
@@ -147,8 +151,9 @@ class OSSE:
 
     def process(self, i, j, k, m_reduced, alpha, seed):
         save_names = {
-            "xa": self.savename.format("xa", i, j, k),
             "xa_spinup": self.savename.format("xa_spinup", i, j, k),
+            "xa": self.savename.format("xa", i, j, k),
+            "x0": self.savename.format("x0", i, j, k),
         }
         try:
             npload(save_names["xa"] + ".npy", precision="float64")
@@ -163,11 +168,17 @@ class OSSE:
             y += np.random.normal(loc=0, scale=self.r, size=y.shape)  # R = r^2*I
 
             # generate initial ensemble
-            x_0 = self.x_true[np.random.randint(len(self.x_true) - 1)]
-            P_0 = 25 * np.eye(self.J)
-            X_0 = x_0 + np.random.multivariate_normal(
-                np.zeros_like(x_0), P_0, self.m0
-            )  # (m0, dim_x)
+            if self.accurate_initialization:
+                x_0 = self.x_true[0]
+                X_0 = x_0 + np.random.multivariate_normal(
+                    np.zeros_like(x_0), self.R*1e-2, self.m0
+                )  # (m0, dim_x) # accurate initialization with small spread 0.1 r
+            else:
+                x_0 = self.x_true[np.random.randint(len(self.x_true) - 1)]
+                P_0 = 25 * np.eye(self.J)
+                X_0 = x_0 + np.random.multivariate_normal(
+                    np.zeros_like(x_0), P_0, self.m0
+                )  # (m0, dim_x)
 
             # run spin-up
             print("spin-up")
@@ -178,15 +189,14 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save spin-up data
+            npsave(save_names["x0"], etkf.X0, precision="float32")
             # npsave(self.savename.format("xf_spinup", i, j, k), etkf.Xf, precision="float32")
             npsave(save_names["xa_spinup"], etkf.Xa, precision="float32")
-            # Xa_spinup = etkf.Xa
 
             # reduce ensemble
             X_reduced = reduce_by_svd(etkf.X, m_reduced)  # by SVD
             # X_reduced = reduce_by_sample(etkf.X, m_reduced) # by random sampling
             etkf.initialize(X_reduced)
-            # etkf.alpha = 1.0
             print("assimilation")
             for y_obs in tqdm(y[self.N_spinup :]):
                 etkf.forecast(self.Dt)
@@ -388,6 +398,7 @@ if __name__ == "__main__":
     m_reduced_list = set_params.m_reduced_list
     alpha_list = set_params.alpha_list
     seeds = set_params.seeds
+    accurate_initialization = getattr(set_params, 'accurate_initialization', False)
 
     savename_x_true = generate_trajectory(J, F, dt, N, obs_per, data_dir)
 
@@ -403,6 +414,7 @@ if __name__ == "__main__":
         seeds,
         data_dir=data_dir,
         savename_x_true=savename_x_true,
+        accurate_initialization=accurate_initialization,
     )
     _ = osse.run(parallel=parallel)
     _ = osse.summarize_results(T_inf)

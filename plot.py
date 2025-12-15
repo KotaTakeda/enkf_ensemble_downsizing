@@ -120,6 +120,7 @@ def plot_time_series(
     x_true_path=None,
     Xa_dict=None,
     title=None,
+    plot_x0=False,
 ):
     """
     Helper to plot RMSE time series for given data_dir, m, alpha, etc.
@@ -137,6 +138,7 @@ def plot_time_series(
         x_true_path: path to x_true file (optional)
         Xa_dict: precomputed dictionary (optional)
         title: str, plot title
+        plot_x0: bool, whether to plot RMSE for x0 (initial estimate)
     Returns:
         ax
     """
@@ -167,7 +169,7 @@ def plot_time_series(
         m = re.search(r"r(\d+)", data_dir)
         r = float(m.group(1)) if m else 1.0
     # Time index
-    t = np.arange(0, len(x_true))[::plot_per]
+    t = np.arange(1, len(x_true)+1)[::plot_per]
     # Create axes if not provided
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(8, 4))
@@ -193,22 +195,33 @@ def plot_time_series(
             # Load Xa for this (i, j, k_seed)
             # Xa_dict is optional precomputed mapping, else try to load
             if Xa_dict is not None:
-                xa_dict = Xa_dict[i, j, k_seed]
+                xa_dict = Xa_dict[i, j, k_seed] # deprecated
             else:
                 # Try to load from convention: xa-m{m_reduced}-alpha{alpha}-seed{k_seed}.npy
                 # This may need to be adapted to your file structure
                 savename_xa = os.path.join(data_dir, f"xa-{i}{j}{k_seed}")
                 savename_xa_spinup = os.path.join(data_dir, f"xa_spinup-{i}{j}{k_seed}")
-                xa_dict = {"xa": savename_xa, "xa_spinup": savename_xa_spinup}
+                savename_x0 = os.path.join(data_dir, f"x0-{i}{j}{k_seed}")
+                xa_dict = {"xa": savename_xa, "xa_spinup": savename_xa_spinup, "x0": savename_x0}
             # Load Xa time series
             label = f"ETKF-{m_reduced} $\\alpha$={alpha}" # for plot legend
             xa = npload(xa_dict["xa"] + ".npy").mean(axis=1)  # (N, J)
+            # If spinup data exists, load and prepend
             if os.path.exists(xa_dict["xa_spinup"] + ".npy"):
                 xa_spinup = npload(xa_dict["xa_spinup"] + ".npy")  # (N_spinup, m0, J)
                 if len(xa_spinup) > 0:
                     xa_spinup = xa_spinup.mean(axis=1)
                     xa = np.vstack([xa_spinup, xa])
                     label = f"ETKF-reduce({m0}$\\rightarrow${m_reduced}) $\\alpha$={alpha}"
+            # Prepend x0 if needed
+            if plot_x0 and os.path.exists(xa_dict["x0"] + ".npy"):
+                x0 = npload(xa_dict["x0"] + ".npy")  # (m0, J)
+                x0 = x0.mean(axis=0).reshape((1, -1))  # (1, J)
+                xa = np.vstack([x0, xa])
+                if len(xa) > len(x_true):
+                    x_true = np.vstack([x_true[0], x_true])  # align time
+                    t = np.concatenate([[0], t])  # shift time index
+                
             # Compute RMSE
             rmse = np.linalg.norm(x_true - xa, axis=-1) / np.sqrt(J)
             ax.plot(
@@ -269,15 +282,51 @@ def plot_fig6():
     plt.close(fig)
 
 
-def plot_fig3():
+# def plot_fig3():
+#     """
+#     Plot Figure 3: time series for case2/N1 and case2/N0, stack vertically, add (a) and (b).
+#     """
+#     fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
+#     # First subplot: case2/N1, m=15, all alphas
+#     plot_time_series(
+#         data_dir="data/case2/N1",
+#         target_m_list=[15],
+#         target_alpha_list=None,  # all alphas
+#         plot_type="one sample",
+#         plot_ylabel=True,
+#         plot_legend=True,
+#         k_seed=0,
+#         ax=axs[0],
+#         title="(a) $N_{spinup}=720$",
+#     )
+#     # Second subplot: case2/N0, m=15, all alphas
+#     plot_time_series(
+#         data_dir="data/case2/N0",
+#         target_m_list=[15],
+#         target_alpha_list=None,
+#         plot_type="one sample",
+#         plot_ylabel=True,
+#         plot_legend=True,
+#         k_seed=0,
+#         ax=axs[1],
+#         title="(b) $N_{spinup}=0$",
+#     )
+#     fig.tight_layout()
+#     os.makedirs("figures", exist_ok=True)
+#     fig.savefig("figures/fig3.pdf", transparent=True)
+#     plt.close(fig)
+
+def plot_fig3_new():
     """
-    Plot Figure 3: time series for case2/N1 and case2/N0, stack vertically, add (a) and (b).
+    Plot Figure 3: time series for case2/N0-r4 and case2/N1-r4, stack vertically, add (a) and (b).
     """
     fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
-    # First subplot: case2/N1, m=15, all alphas
+    for ax in axs:
+        ax.set_ylim(1e-5, 10.0)
+    # First subplot: case2/N1, m=14, all alphas
     plot_time_series(
-        data_dir="data/case2/N1",
-        target_m_list=[15],
+        data_dir="data/case2/N1-r4",
+        target_m_list=[14],
         target_alpha_list=None,  # all alphas
         plot_type="one sample",
         plot_ylabel=True,
@@ -285,11 +334,12 @@ def plot_fig3():
         k_seed=0,
         ax=axs[0],
         title="(a) $N_{spinup}=720$",
+        plot_x0=True,
     )
-    # Second subplot: case2/N0, m=15, all alphas
+    # Second subplot: case2/N0, m=14, all alphas
     plot_time_series(
-        data_dir="data/case2/N0",
-        target_m_list=[15],
+        data_dir="data/case2/N0-r4",
+        target_m_list=[14],
         target_alpha_list=None,
         plot_type="one sample",
         plot_ylabel=True,
@@ -297,12 +347,12 @@ def plot_fig3():
         k_seed=0,
         ax=axs[1],
         title="(b) $N_{spinup}=0$",
+        plot_x0=True,
     )
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig3.pdf", transparent=True)
+    fig.savefig("figures/fig3_new.pdf", transparent=True)
     plt.close(fig)
-
 
 def plot_fig4():
     """
@@ -339,12 +389,26 @@ def plot_fig4():
     plt.close(fig)
 
 
+def plot_fig4_new():
+    """
+    TODO: case2/N0-r4-acc, N1-r4-acc RMSE time series plots.
+    """
+
+def plot_fig5_new():
+    """
+    TODO: copy plot_fig4
+    Plot Figure 4: time series for case2/N0-r4, m=14 and m=13, stack vertically, add (a) and (b).
+    """
+
 # ========================
 # Main
 # ========================
 
 if __name__ == "__main__":
-    plot_fig2()
-    plot_fig3()
-    plot_fig4()
-    plot_fig6()
+    # plot_fig2()
+    # plot_fig3() 
+    plot_fig3_new()
+    # plot_fig4()
+    # plot_fig6()
+
+# TODO: 3 -> 3_new, 4 -> 5_new, 6 -> 7_new
