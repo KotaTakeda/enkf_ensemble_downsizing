@@ -1,0 +1,11 @@
+J = 40
+F = 8
+dt = 1e-3
+N = 360 * 200 * 10  # Nature run period (10 years)
+obs_per = 1
+T_inf = N // obs_per // 2
+r = 1.0  # Std. of obs. noise
+N_spinup = 720  # Ensemble spin-up
+m_reduced_list = [14]
+alpha_list = [1.1, 1.3, 1.5]
+seeds = [n for n in range(10)] # random seeds

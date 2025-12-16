@@ -308,7 +308,7 @@ class OSSE:
                     # rmse_tmp = []
                     # traceP_tmp = []
                     # ensdim_tmp = []
-                    print(i, j)
+                    # print(i, j)
                     for k, _ in enumerate(seeds):
                         Xa = npload(
                             self.savename.format("xa", i, j, k) + ".npy",
@@ -317,10 +317,10 @@ class OSSE:
                         se_tail = np.sum(
                             (self.x_true[N_spinup:] - Xa.mean(axis=1))[T_inf:] ** 2,
                             axis=-1,
-                        )
+                        )  # (T - T_inf,)
 
                         # SE
-                        se_tmp.append(se_tail)  # (T,)
+                        se_tmp.append(se_tail) 
 
                         # RMSE
                         # assert np.allclose(np.sqrt(se_tail), np.linalg.norm(e[T_inf:], axis=-1))  # test
@@ -334,19 +334,13 @@ class OSSE:
 
                         del Xa
 
-                    se_tmp = np.array(se_tmp)  # (m, T - T_inf)
+                    se_tmp = np.array(se_tmp)  # (len(seeds), T - T_inf)
                     # assert np.allclose(np.sqrt(se_tmp / J), rmse_tmp)
 
-                    sup_se[i, j] = np.max(
-                        np.mean(se_tmp, axis=0), axis=0
-                    )  # sup_t(E[SE])
+                    sup_se[i, j] = np.max(np.mean(se_tmp, axis=0))  # sup_t(E[SE])
                     mean_se[i, j] = np.mean(se_tmp)  # mean_t(E[SE])
-                    sup_rmse[i, j] = np.max(
-                        np.mean(np.sqrt(se_tmp / self.J), axis=0), axis=0
-                    )  # sup_t(E[RMSE])
-                    mean_rmse[i, j] = np.mean(
-                        np.sqrt(se_tmp / self.J)
-                    )  # mean_t(E[RMSE])
+                    sup_rmse[i, j] = np.max(np.mean(np.sqrt(se_tmp / self.J), axis=0))  # sup_t(E[RMSE])
+                    mean_rmse[i, j] = np.mean(np.sqrt(se_tmp / self.J))  # mean_t(E[RMSE])
                     # traceP[i, j] = np.mean(traceP_tmp)  # E[mean_t(tr(Pa))]
                     # ensdim[i, j] = np.mean(ensdim_tmp)  # E[mean_t(D_ens)]
 
