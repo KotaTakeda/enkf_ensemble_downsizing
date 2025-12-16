@@ -169,7 +169,7 @@ def plot_time_series(
         m = re.search(r"r(\d+)", data_dir)
         r = float(m.group(1)) if m else 1.0
     # Time index
-    t = np.arange(1, len(x_true)+1)[::plot_per]
+    t = np.arange(1, len(x_true)+1)
     # Create axes if not provided
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(8, 4))
@@ -218,14 +218,18 @@ def plot_time_series(
                 x0 = npload(xa_dict["x0"] + ".npy")  # (m0, J)
                 x0 = x0.mean(axis=0).reshape((1, -1))  # (1, J)
                 xa = np.vstack([x0, xa])
-                if len(xa) > len(x_true):
-                    x_true = np.vstack([x_true[0], x_true])  # align time
-                    t = np.concatenate([[0], t])  # shift time index
-                
+
+            # Align time series lengths
+            if len(xa) == len(x_true):
+                x_true_align = x_true
+                t_align = t
+            elif len(xa) == len(x_true) + 1:
+                x_true_align = np.vstack([x_true[0], x_true])  # align time
+                t_align = np.concatenate([[0], t])  # shift time index
             # Compute RMSE
-            rmse = np.linalg.norm(x_true - xa, axis=-1) / np.sqrt(J)
+            rmse = np.linalg.norm(x_true_align - xa, axis=-1) / np.sqrt(J)
             ax.plot(
-                t,
+                t_align[::plot_per],
                 rmse[::plot_per],
                 label=label,
                 lw=0.8,
@@ -316,6 +320,7 @@ def plot_fig6():
 #     fig.savefig("figures/fig3.pdf", transparent=True)
 #     plt.close(fig)
 
+# TODO: change name
 def plot_fig3_new():
     """
     Plot Figure 3: time series for case2/N0-r4 and case2/N1-r4, stack vertically, add (a) and (b).
@@ -354,6 +359,49 @@ def plot_fig3_new():
     fig.savefig("figures/fig3_new.pdf", transparent=True)
     plt.close(fig)
 
+
+
+def plot_fig4_new():
+    """
+    Plot Figure 4: time series for case2/N0-r4-acc and N1-r4-acc, stack vertically, add (a) and (b).
+    """
+    fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
+    for ax in axs:
+        ax.set_ylim(1e-6, 10.0)
+    # First subplot: case2/N1, m=14, all alphas
+    plot_time_series(
+        data_dir="data/case2/N1-r4-acc",
+        target_m_list=[14],
+        target_alpha_list=None,  # all alphas
+        plot_type="one sample",
+        plot_ylabel=True,
+        plot_legend=True,
+        k_seed=0,
+        ax=axs[0],
+        title="(a) $N_{spinup}=720$",
+        plot_x0=True,
+        plot_per=100
+    )
+    # Second subplot: case2/N0, m=14, all alphas
+    plot_time_series(
+        data_dir="data/case2/N0-r4-acc",
+        target_m_list=[14],
+        target_alpha_list=None,
+        plot_type="one sample",
+        plot_ylabel=True,
+        plot_legend=True,
+        k_seed=0,
+        ax=axs[1],
+        title="(b) $N_{spinup}=0$",
+        plot_x0=True,
+        plot_per=100
+    )
+    fig.tight_layout()
+    os.makedirs("figures", exist_ok=True)
+    fig.savefig("figures/fig4_new.pdf", transparent=True)
+    plt.close(fig)
+
+
 def plot_fig4():
     """
     Plot Figure 4: time series for case2/N0-r4, m=14 and m=13, stack vertically, add (a) and (b).
@@ -389,11 +437,6 @@ def plot_fig4():
     plt.close(fig)
 
 
-def plot_fig4_new():
-    """
-    TODO: case2/N0-r4-acc, N1-r4-acc RMSE time series plots.
-    """
-
 def plot_fig5_new():
     """
     TODO: copy plot_fig4
@@ -408,6 +451,7 @@ if __name__ == "__main__":
     # plot_fig2()
     # plot_fig3() 
     plot_fig3_new()
+    plot_fig4_new()
     # plot_fig4()
     # plot_fig6()
 

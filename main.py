@@ -169,10 +169,12 @@ class OSSE:
 
             # generate initial ensemble
             if self.accurate_initialization:
-                x_0 = self.x_true[0]
+                x_0 = self.x_true[0] + np.random.multivariate_normal(
+                    np.zeros_like(self.x_true[0]), self.R*1e-2)
                 X_0 = x_0 + np.random.multivariate_normal(
                     np.zeros_like(x_0), self.R*1e-2, self.m0
                 )  # (m0, dim_x) # accurate initialization with small spread 0.1 r
+                # TODO: spreadの大きさは要検討
             else:
                 x_0 = self.x_true[np.random.randint(len(self.x_true) - 1)]
                 P_0 = 25 * np.eye(self.J)
