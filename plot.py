@@ -91,10 +91,10 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
 def _error_title(error_type):
     """Convert error_type string to a plot title."""
     title_map = {
-        "sup_se": r"$\sup_{n \rightarrow \infty} \mathbb{E}[SE_n]$",
-        "mean_se": r"$\operatorname{mean}_n \mathbb{E}[SE_n]$",
-        "sup_rmse": r"$\sup_{n \rightarrow \infty} \mathbb{E}[RMSE_n]$",
-        "mean_rmse": r"$\operatorname{mean}_n \mathbb{E}[RMSE_n]$",
+        "sup_se": r"$\limsup_{n \rightarrow \infty} \mathbb{E}[\mathrm{SE}_n]$",
+        "mean_se": r"$\operatorname{mean}_n \mathbb{E}[\mathrm{SE}_n]$",
+        "sup_rmse": r"$\limsup_{n \rightarrow \infty} \mathbb{E}[\mathrm{RMSE}_n]$",
+        "mean_rmse": r"$\operatorname{mean}_n \mathbb{E}[\mathrm{RMSE}_n]$",
     }
     return title_map.get(error_type, "Error")
 
@@ -305,7 +305,7 @@ def plot_fig2_new():
     ax.text(1e-4, 9e-4, "obs. noise level", fontdict=dict(fontsize=14, color="black"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig2_new.pdf", transparent=True)
+    fig.savefig("figures/fig2.pdf", transparent=True)
     plt.close(fig)
 
 
@@ -324,11 +324,11 @@ def plot_fig2_new():
 #     fig.savefig("figures/fig6.pdf", transparent=True)
 #     plt.close(fig)
 
-def plot_fig7_new():
+def plot_fig6_new():
     """
-    Plot Figure 7: summarize (r, m) for case3, annotate, and save.
+    Plot Figure 6: summarize (r, m) for case3, annotate, and save.
     """
-    print("Plot Figure 7: summarize (r, m) for case3, annotate, and save.")
+    print("Plot Figure 6: summarize (r, m) for case3, annotate, and save.")
     fig, ax = summarize_rm(
         "data/case3", logr_list=[0, 1, 2, 3, 4], target_m=16, error_type="sup_se"
     )
@@ -337,7 +337,7 @@ def plot_fig7_new():
     ax.text(1e-4, 9e-4, "obs. noise level", fontdict=dict(fontsize=14, color="black"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig7_new.pdf", transparent=True)
+    fig.savefig("figures/fig6.pdf", transparent=True)
     plt.close(fig)
 
 
@@ -412,7 +412,7 @@ def plot_fig3_new():
     )
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig3_new.pdf", transparent=True)
+    fig.savefig("figures/fig3.pdf", transparent=True)
     plt.close(fig)
 
 
@@ -455,7 +455,7 @@ def plot_fig4_new():
     )
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig4_new.pdf", transparent=True)
+    fig.savefig("figures/fig4.pdf", transparent=True)
     plt.close(fig)
 
 
@@ -490,50 +490,50 @@ def plot_fig4_new():
 #     )
 #     fig.tight_layout()
 #     os.makedirs("figures", exist_ok=True)
-#     fig.savefig("figures/fig4_new.pdf", transparent=True)
+#     fig.savefig("figures/fig4.pdf", transparent=True)
 #     plt.close(fig)
 
 
-def plot_fig5_new():
-    """
-    Plot Figure 5: time series for case2/N0-r4, m=14 and m=13, stack vertically, add (a) and (b).
-    """
-    print("Plot Figure 5: time series for case2/N0-r4, m=14 and m=13.")
-    fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
-    # First subplot: m=14
-    plot_time_series(
-        data_dir="data/case2/N0-r4",
-        target_m_list=[14],
-        target_alpha_list=None,
-        plot_type="one sample",
-        plot_ylabel=True,
-        plot_legend=True,
-        k_seed=0,
-        ax=axs[0],
-        title="(a) $m=14$",
-    )
-    # Second subplot: m=13
-    plot_time_series(
-        data_dir="data/case2/N0-r4",
-        target_m_list=[13],
-        target_alpha_list=None,
-        plot_type="one sample",
-        plot_ylabel=True,
-        plot_legend=True,
-        k_seed=0,
-        ax=axs[1],
-        title="(b) $m=13$",
-    )
-    fig.tight_layout()
-    os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig5_new.pdf", transparent=True)
-    plt.close(fig)
+# def plot_fig5_new():
+#     """
+#     Plot Figure 5: time series for case2/N0-r4, m=14 and m=13, stack vertically, add (a) and (b).
+#     """
+#     print("Plot Figure 5: time series for case2/N0-r4, m=14 and m=13.")
+#     fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
+#     # First subplot: m=14
+#     plot_time_series(
+#         data_dir="data/case2/N0-r4",
+#         target_m_list=[14],
+#         target_alpha_list=None,
+#         plot_type="one sample",
+#         plot_ylabel=True,
+#         plot_legend=True,
+#         k_seed=0,
+#         ax=axs[0],
+#         title="(a) $m=14$",
+#     )
+#     # Second subplot: m=13
+#     plot_time_series(
+#         data_dir="data/case2/N0-r4",
+#         target_m_list=[13],
+#         target_alpha_list=None,
+#         plot_type="one sample",
+#         plot_ylabel=True,
+#         plot_legend=True,
+#         k_seed=0,
+#         ax=axs[1],
+#         title="(b) $m=13$",
+#     )
+#     fig.tight_layout()
+#     os.makedirs("figures", exist_ok=True)
+#     fig.savefig("figures/fig5.pdf", transparent=True)
+#     plt.close(fig)
 
-def plot_fig8_new():
+def plot_fig7_new():
     """ 
-    Plot Figure 8: time series for case4/r0-t3, m=14.
+    Plot Figure 7: time series for case4/r0-t3, m=14.
     """
-    print("Plot Figure 8: time series for case4/r0-t3, m=14.")
+    print("Plot Figure 7: time series for case4/r0-t3, m=14.")
     fig, ax = plt.subplots(1, 1, figsize=(8, 4), sharex=True)
     plot_time_series(
         data_dir="data/case4/r0-t3",
@@ -549,7 +549,7 @@ def plot_fig8_new():
     )
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig8_new.pdf", transparent=True)
+    fig.savefig("figures/fig7.pdf", transparent=True)
     plt.close(fig)
 
 # ========================
@@ -567,6 +567,6 @@ if __name__ == "__main__":
     plot_fig2_new()
     plot_fig3_new()
     plot_fig4_new()
-    plot_fig5_new()
+    # plot_fig5_new()
+    plot_fig6_new()
     plot_fig7_new()
-    plot_fig8_new()

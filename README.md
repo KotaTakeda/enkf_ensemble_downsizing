@@ -73,7 +73,7 @@ python3 main.py --data_dir={data_dir_name}
 sh run_lyapunov.sh
 ```
 
-### Generate Fig.2, 3, 4, 6
+### Generate Fig.2, 3, 4, 6 (TODO:)
 
 ```sh
 sh run_experiments.sh
@@ -81,7 +81,7 @@ sh run_experiments.sh
 
 ## Other information
 
-### Repository organization
+### Repository organization (TODO:)
 
 The repository is organized to allow reproduction of each figure in the manuscript.
 
@@ -118,7 +118,7 @@ root/
 Each subfolder contains its own `set_params.py` and stores results in a consistent structure.
 An example of saved filename format: `xa_ijk.npy` (`i`->`m`, `j`->`alpha`, `k`->`seed`).
 
-### Parameters
+### Parameters (TODO:)
 
 The key parameters defined in `set_params.py`:
 
