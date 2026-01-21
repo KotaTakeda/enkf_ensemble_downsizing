@@ -13,7 +13,7 @@ lines.markeredgewidth : 0.75
 ## font properties used by text.Text.  See
 ## http://matplotlib.org/api/font_manager_api.html for more
 ## information on font properties.
-font.family          : sans-serif
+font.family          : serif
 font.serif           : Arial
 font.size            : 20.0
 

@@ -277,22 +277,7 @@ def plot_time_series(
 # ========================
 
 
-# def plot_fig2():
-#     """
-#     Plot Figure 2: summarize_rm for case1, annotate, and save.
-#     """
-#     fig, ax = summarize_rm(
-#         "data/case1", logr_list=[0, 1, 2, 3, 4], target_m=14, error_type="sup_se"
-#     )
-#     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
-#     ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-4), arrowprops=arrowprops)
-#     ax.text(1e-4, 9e-4, "obs. noise level", fontdict=dict(fontsize=14, color="black"))
-#     fig.tight_layout()
-#     os.makedirs("figures", exist_ok=True)
-#     fig.savefig("figures/fig2.pdf", transparent=True)
-#     plt.close(fig)
-
-def plot_fig2_new():
+def plot_fig2():
     """
     Plot Figure 2: summarize (r, m) for case1, annotate, and save.
     """
@@ -309,22 +294,7 @@ def plot_fig2_new():
     plt.close(fig)
 
 
-# def plot_fig6():
-#     """
-#     Plot Figure 6: summarize_rm for case3, annotate, and save.
-#     """
-#     fig, ax = summarize_rm(
-#         "data/case3", logr_list=[0, 1, 2, 3, 4], target_m=16, error_type="sup_se"
-#     )
-#     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
-#     ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-4), arrowprops=arrowprops)
-#     ax.text(1e-4, 9e-4, "obs. noise level", fontdict=dict(fontsize=14, color="black"))
-#     fig.tight_layout()
-#     os.makedirs("figures", exist_ok=True)
-#     fig.savefig("figures/fig6.pdf", transparent=True)
-#     plt.close(fig)
-
-def plot_fig6_new():
+def plot_fig6():
     """
     Plot Figure 6: summarize (r, m) for case3, annotate, and save.
     """
@@ -341,42 +311,7 @@ def plot_fig6_new():
     plt.close(fig)
 
 
-# def plot_fig3():
-#     """
-#     Plot Figure 3: time series for case2/N1 and case2/N0, stack vertically, add (a) and (b).
-#     """
-#     fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
-#     # First subplot: case2/N1, m=15, all alphas
-#     plot_time_series(
-#         data_dir="data/case2/N1",
-#         target_m_list=[15],
-#         target_alpha_list=None,  # all alphas
-#         plot_type="one sample",
-#         plot_ylabel=True,
-#         plot_legend=True,
-#         k_seed=0,
-#         ax=axs[0],
-#         title="(a) $N_{spinup}=720$",
-#     )
-#     # Second subplot: case2/N0, m=15, all alphas
-#     plot_time_series(
-#         data_dir="data/case2/N0",
-#         target_m_list=[15],
-#         target_alpha_list=None,
-#         plot_type="one sample",
-#         plot_ylabel=True,
-#         plot_legend=True,
-#         k_seed=0,
-#         ax=axs[1],
-#         title="(b) $N_{spinup}=0$",
-#     )
-#     fig.tight_layout()
-#     os.makedirs("figures", exist_ok=True)
-#     fig.savefig("figures/fig3.pdf", transparent=True)
-#     plt.close(fig)
-
-# TODO: change name
-def plot_fig3_new():
+def plot_fig3():
     """
     Plot Figure 3: time series for case2/N0-r4 and case2/N1-r4, stack vertically, add (a) and (b).
     """
@@ -417,7 +352,7 @@ def plot_fig3_new():
 
 
 
-def plot_fig4_new():
+def plot_fig4():
     """
     Plot Figure 4: time series for case2/N0-r4-acc and N1-r4-acc, stack vertically, add (a) and (b).
     """
@@ -459,77 +394,7 @@ def plot_fig4_new():
     plt.close(fig)
 
 
-# def plot_fig4():
-#     """
-#     Plot Figure 4: time series for case2/N0-r4, m=14 and m=13, stack vertically, add (a) and (b).
-#     """
-#     fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
-#     # First subplot: m=14
-#     plot_time_series(
-#         data_dir="data/case2/N0-r4",
-#         target_m_list=[14],
-#         target_alpha_list=None,
-#         plot_type="one sample",
-#         plot_ylabel=True,
-#         plot_legend=True,
-#         k_seed=0,
-#         ax=axs[0],
-#         title="(a) $m=14$",
-#     )
-#     # Second subplot: m=13
-#     plot_time_series(
-#         data_dir="data/case2/N0-r4",
-#         target_m_list=[13],
-#         target_alpha_list=None,
-#         plot_type="one sample",
-#         plot_ylabel=True,
-#         plot_legend=True,
-#         k_seed=0,
-#         ax=axs[1],
-#         title="(b) $m=13$",
-#     )
-#     fig.tight_layout()
-#     os.makedirs("figures", exist_ok=True)
-#     fig.savefig("figures/fig4.pdf", transparent=True)
-#     plt.close(fig)
-
-
-# def plot_fig5_new():
-#     """
-#     Plot Figure 5: time series for case2/N0-r4, m=14 and m=13, stack vertically, add (a) and (b).
-#     """
-#     print("Plot Figure 5: time series for case2/N0-r4, m=14 and m=13.")
-#     fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)
-#     # First subplot: m=14
-#     plot_time_series(
-#         data_dir="data/case2/N0-r4",
-#         target_m_list=[14],
-#         target_alpha_list=None,
-#         plot_type="one sample",
-#         plot_ylabel=True,
-#         plot_legend=True,
-#         k_seed=0,
-#         ax=axs[0],
-#         title="(a) $m=14$",
-#     )
-#     # Second subplot: m=13
-#     plot_time_series(
-#         data_dir="data/case2/N0-r4",
-#         target_m_list=[13],
-#         target_alpha_list=None,
-#         plot_type="one sample",
-#         plot_ylabel=True,
-#         plot_legend=True,
-#         k_seed=0,
-#         ax=axs[1],
-#         title="(b) $m=13$",
-#     )
-#     fig.tight_layout()
-#     os.makedirs("figures", exist_ok=True)
-#     fig.savefig("figures/fig5.pdf", transparent=True)
-#     plt.close(fig)
-
-def plot_fig7_new():
+def plot_fig7():
     """ 
     Plot Figure 7: time series for case4/r0-t3, m=14.
     """
@@ -557,16 +422,8 @@ def plot_fig7_new():
 # ========================
 
 if __name__ == "__main__":
-    # Old
-    # plot_fig2()
-    # plot_fig3() 
-    # plot_fig4()
-    # plot_fig6()
-
-    # New
-    plot_fig2_new()
-    plot_fig3_new()
-    plot_fig4_new()
-    # plot_fig5_new()
-    plot_fig6_new()
-    plot_fig7_new()
+    plot_fig2()
+    plot_fig3()
+    plot_fig4()
+    plot_fig6()
+    plot_fig7()
