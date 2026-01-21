@@ -111,6 +111,7 @@ def plot_time_series(
     target_m_list,
     target_alpha_list,
     plot_type="one sample",
+    plot_metric="RMSE",
     plot_ylabel=True,
     plot_legend=True,
     k_seed=0,
@@ -129,6 +130,7 @@ def plot_time_series(
         target_m_list: list of int
         target_alpha_list: list of float
         plot_type: str ["one sample", "mean", ...]
+        plot_metric: str ["RMSE", "SE"]
         plot_ylabel: bool
         plot_legend: bool
         k_seed: int
@@ -142,6 +144,7 @@ def plot_time_series(
     Returns:
         ax
     """
+    
 
     # Load params
     set_params = load_params(data_dir)
@@ -179,14 +182,27 @@ def plot_time_series(
     if ax is None:
         fig, ax = plt.subplots(1, 1, figsize=(8, 4))
     # Plot observation noise level
-    ax.plot(
-        t,
-        r * np.ones_like(t),
-        lw=1,
-        c="black",
-        ls="--",
-        label="Observation noise level $ r $",
-    )
+    if plot_metric=="RMSE":
+        ax.plot(
+            t,
+            r * np.ones_like(t),
+            lw=1,
+            c="black",
+            ls="--",
+            label="Observation noise level $ r $",
+        )
+    elif plot_metric=="SE":
+        ax.plot(
+            t,
+            J * r**2 * np.ones_like(t),
+            lw=1,
+            c="black",
+            ls="--",
+            label="Observation noise level $ N_x r^2 $",
+        )
+    else:
+        raise ValueError("Unknown plot_metric: {plot_metric} ")
+
 
     # Handle plot_type
     if plot_type == "one sample":
@@ -207,7 +223,7 @@ def plot_time_series(
             if len(target_alpha_list) > 0 and alpha not in target_alpha_list:
                 continue
             xa_allk = []
-            for k, seed in enumerate(seed_list):
+            for k, _ in enumerate(seed_list):
                 # Load Xa for this (i, j, k)
                 # Xa_dict is optional precomputed mapping, else try to load
                 if Xa_dict is not None:
@@ -248,12 +264,18 @@ def plot_time_series(
                 t_align = np.concatenate([[0], t])  # shift time index
             else:
                 raise ValueError("Length mismatch between xa and x_true.")
-            # Compute RMSE
-            rmse = np.linalg.norm(x_true_align[None, :, :] - xa_allk, axis=-1).mean(axis=0) / np.sqrt(J) # (N, )
+            # Compute metric
+            se = np.sum((x_true_align[None, :, :] - xa_allk)**2, axis=-1) # (len(k_list), N)
+            if plot_metric=="RMSE":
+                metric = np.mean(np.sqrt(se / J , axis=0)) # (N, )
+            elif plot_metric=="SE":
+                metric = np.mean(se, axis=0) # (N, )
+            
             # Plot
+            # FIXME: slice with plot_per before computing metric
             ax.plot(
                 t_align[::plot_per],
-                rmse[::plot_per],
+                metric[::plot_per],
                 label=label,
                 lw=0.8,
                 marker=marker,
@@ -261,7 +283,7 @@ def plot_time_series(
             )
     ax.set_xlabel("obs. step $n$")
     if ylabel is None:
-        ylabel = "RMSE"
+        ylabel = plot_metric
     if plot_ylabel:
         ax.set_ylabel(ylabel)
     if plot_legend:
@@ -407,7 +429,6 @@ def plot_fig7():
         plot_type="mean",
         plot_ylabel=True,
         plot_legend=True,
-        k_seed=0,
         ax=ax,
         title="Expectation of RMSE",
         plot_per=5000,
