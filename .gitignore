@@ -176,6 +176,7 @@ cython_debug/
 *.pdf
 *.npy
 *.csv
+*.mp4
 data/*.md
 data/*/*.md
 data/case2-2

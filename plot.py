@@ -294,6 +294,143 @@ def plot_time_series(
     return ax
 
 
+import numpy as np
+import pyvista as pv
+from IPython.display import Video
+
+def animate_enkf_pyvista(x_true, x_esti, obs=None, 
+                         t_info=None,
+                         filename="enkf_vis.mp4", 
+                         tail_len=20, 
+                         colors=None,
+                         ax_labels=('x', 'y', 'z')):
+    """
+    Fixed AttributeError by using coordinate positioning for text.
+    """
+    
+    # 1. Setup Data & Colors
+    T, m, _ = x_esti.shape
+    x_mean = np.mean(x_esti, axis=1)
+
+    style = {
+        'true': 'blue',
+        'mean': 'red',
+        'ens':  'red',
+        'obs':  'green'
+    }
+    if colors:
+        style.update(colors)
+
+    # 2. Calculate Global Bounds
+    all_data = [x_true, x_esti.reshape(-1, 3)]
+    if obs is not None:
+        all_data.append(obs)
+    
+    concatenated = np.concatenate(all_data, axis=0)
+    min_pt = np.min(concatenated, axis=0)
+    max_pt = np.max(concatenated, axis=0)
+    
+    margin = (max_pt - min_pt) * 0.1
+    bounds = [min_pt[0]-margin[0], max_pt[0]+margin[0],
+              min_pt[1]-margin[1], max_pt[1]+margin[1],
+              min_pt[2]-margin[2], max_pt[2]+margin[2]]
+
+    # 3. Setup Plotter
+    pv.set_plot_theme("document")
+    pl = pv.Plotter(off_screen=True, window_size=[1024, 768])
+    try:
+        pl.open_movie(filename, framerate=30, codec='libx264')
+    except Exception as e:
+        print(f"Warning: libx264 not found. Falling back to default. Error: {e}")
+        pl.open_movie(filename, framerate=30)
+    bbox = pv.Box(bounds)
+    pl.add_mesh(bbox, opacity=0.0, show_edges=False) 
+
+    # --- Time Display Setup (Fixed) ---
+    text_actor = None
+    if t_info:
+        t_start = t_info.get("t_start", 0.0)
+        dt_vis = t_info.get("dt", 1.0)
+        
+        # Use tuple (x, y) coordinates (0 to 1) instead of 'upper_right'
+        # (0.7, 0.9) places it roughly in the top-right corner
+        text_actor = pl.add_text(
+            f"Time: {t_start:.2f}", 
+            position=(0.75, 0.9),  # <--- CHANGED HERE
+            color='black', 
+            font_size=12,
+            font='arial'
+        )
+
+    # 4. Initialize Meshes
+    line_true = pv.Spline(x_true[:2], 20) 
+    pl.add_mesh(line_true, color=style['true'], line_width=4, label="True State")
+
+    line_mean = pv.Spline(x_mean[:2], 20)
+    pl.add_mesh(line_mean, color=style['mean'], line_width=4, label="Est (Mean)", opacity=0.7)
+
+    n_show_ens = min(m, 20)
+    ens_meshes = []
+    for k in range(n_show_ens): 
+        l = pv.Spline(x_esti[:2, k], 10)
+        pl.add_mesh(l, color=style['ens'], line_width=1, opacity=0.5) 
+        ens_meshes.append(l)
+
+    points_obs = None
+    if obs is not None:
+        points_obs = pv.PolyData(obs[:1])
+        pl.add_mesh(points_obs, color=style['obs'], point_size=15, 
+                    render_points_as_spheres=True, label="Observation")
+
+    # 5. Scene Settings
+    pl.show_grid(
+        color='black', 
+        bounds=bounds,
+        xtitle=ax_labels[0],
+        ytitle=ax_labels[1],
+        ztitle=ax_labels[2],
+        font_size=12,
+        bold=False
+    )
+    
+    pl.add_legend(bcolor='white', size=(0.2, 0.2), face=None)
+    
+    pl.camera_position = 'xy'
+    pl.camera.azimuth = 45
+    pl.camera.elevation = 20
+    pl.reset_camera()
+
+    print(f"Processing animation: {filename} ...")
+
+    # 6. Animation Loop
+    for i in range(1, T):
+        start = max(0, i - tail_len)
+        end = i + 1
+        
+        if end - start < 2: continue
+
+        # Update Time Text
+        if text_actor:
+            current_time = t_start + i * dt_vis
+            # Now text_actor is a vtkTextActor which has SetInput
+            text_actor.SetInput(f"Time: {current_time:.2f}")
+
+        line_true.copy_from(pv.lines_from_points(x_true[start:end]))
+        line_mean.copy_from(pv.lines_from_points(x_mean[start:end]))
+        
+        for k, mesh in enumerate(ens_meshes):
+            mesh.copy_from(pv.lines_from_points(x_esti[start:end, k]))
+            
+        if obs is not None:
+            points_obs.points = obs[i:i+1]
+        
+        pl.write_frame()
+
+    pl.close()
+    print("Animation saved.")
+    
+    return Video(filename, embed=True, html_attributes="controls loop autoplay")
+
 # ========================
 # Figure plotting functions
 # ========================
@@ -437,6 +574,8 @@ def plot_fig7():
     os.makedirs("figures", exist_ok=True)
     fig.savefig("figures/fig7.pdf", transparent=True)
     plt.close(fig)
+
+# TODO: generate fig7-1
 
 # ========================
 # Main
