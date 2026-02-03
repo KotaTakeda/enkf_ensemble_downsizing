@@ -74,7 +74,7 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
         color="black",
         # ls="-",
         lw=0.5,
-        label="obs. noise level",
+        label="Obs. noise level",
     )  # Jr^2
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -281,7 +281,7 @@ def plot_time_series(
                 marker=marker,
                 color=colors[j],
             )
-    ax.set_xlabel("obs. step $n$")
+    ax.set_xlabel("Obs. step $n$")
     if ylabel is None:
         ylabel = plot_metric
     if plot_ylabel:
@@ -446,7 +446,7 @@ def plot_fig2():
     )
     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
     ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-4), arrowprops=arrowprops)
-    ax.text(1e-4, 9e-4, "obs. noise level", fontdict=dict(fontsize=14, color="black"))
+    ax.text(1e-4, 9e-4, "Obs. noise level", fontdict=dict(fontsize=14, color="black"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
     fig.savefig("figures/fig2.pdf", transparent=True)
@@ -463,7 +463,7 @@ def plot_fig6():
     )
     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
     ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-4), arrowprops=arrowprops)
-    ax.text(1e-4, 9e-4, "obs. noise level", fontdict=dict(fontsize=14, color="black"))
+    ax.text(1e-4, 9e-4, "Obs. noise level", fontdict=dict(fontsize=14, color="black"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
     fig.savefig("figures/fig6.pdf", transparent=True)
@@ -488,7 +488,7 @@ def plot_fig3():
         plot_legend=True,
         k_seed=0,
         ax=axs[0],
-        title="(a) $N_{spinup}=720$",
+        title="(a) $N_{\\mathrm{spinup}}=720$",
         plot_x0=True,
     )
     # Second subplot: case2/N0, m=14, all alphas
@@ -501,7 +501,7 @@ def plot_fig3():
         plot_legend=True,
         k_seed=0,
         ax=axs[1],
-        title="(b) $N_{spinup}=0$",
+        title="(b) $N_{\\mathrm{spinup}}=0$",
         plot_x0=True,
     )
     fig.tight_layout()
@@ -529,7 +529,7 @@ def plot_fig4():
         plot_legend=True,
         k_seed=0,
         ax=axs[0],
-        title="(a) $N_{spinup}=720$",
+        title="(a) $N_{\\mathrm{spinup}}=720$",
         plot_x0=True,
         plot_per=100
     )
@@ -543,7 +543,7 @@ def plot_fig4():
         plot_legend=True,
         k_seed=0,
         ax=axs[1],
-        title="(b) $N_{spinup}=0$",
+        title="(b) $N_{\\mathrm{spinup}}=0$",
         plot_x0=True,
         plot_per=100
     )

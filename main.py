@@ -86,7 +86,7 @@ class OSSE:
         seeds,
         data_dir="",
         savename_x_true=None,
-        accurate_initialization=False, # whether to use accurate initialization (not used)
+        accurate_initialization=False, # whether to use accurate initialization
     ):
         # Model parameters
         self.J = J
