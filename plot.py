@@ -67,6 +67,8 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
             label=f"m = {m}",
             marker=next(markers),
             color=colors[i],
+            lw=1.5,
+            ms=6,
         )
     ax.plot(
         0.1 ** (np.array(logr_list)),
@@ -445,8 +447,8 @@ def plot_fig2():
         "data/case1", logr_list=[0, 1, 2, 3, 4], target_m=14, error_type="sup_se"
     )
     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
-    ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-4), arrowprops=arrowprops)
-    ax.text(1e-4, 9e-4, "Obs. noise level", fontdict=dict(fontsize=14, color="black"))
+    ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-3), arrowprops=arrowprops)
+    ax.text(1e-4, 6e-3, "Obs. noise level", fontdict=dict(fontsize=13, color="black", backgroundcolor="white"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
     fig.savefig("figures/fig2.pdf", transparent=True)
@@ -462,8 +464,8 @@ def plot_fig6():
         "data/case3", logr_list=[0, 1, 2, 3, 4], target_m=16, error_type="sup_se"
     )
     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
-    ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-4), arrowprops=arrowprops)
-    ax.text(1e-4, 9e-4, "Obs. noise level", fontdict=dict(fontsize=14, color="black"))
+    ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-3), arrowprops=arrowprops)
+    ax.text(1e-4, 6e-3, "Obs. noise level", fontdict=dict(fontsize=13, color="black", backgroundcolor="white"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
     fig.savefig("figures/fig6.pdf", transparent=True)
@@ -583,7 +585,7 @@ def plot_fig7():
 
 if __name__ == "__main__":
     plot_fig2()
-    plot_fig3()
-    plot_fig4()
+    # plot_fig3()
+    # plot_fig4()
     plot_fig6()
-    plot_fig7()
+    # plot_fig7()
