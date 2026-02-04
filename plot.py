@@ -76,7 +76,7 @@ def summarize_rm(data_dir_r, logr_list, target_m, error_type="sup_se"):
         color="black",
         # ls="-",
         lw=0.5,
-        label="Obs. noise level",
+        label="Obs. noise scale",
     )  # Jr^2
     ax.set_xscale("log")
     ax.set_yscale("log")
@@ -448,7 +448,7 @@ def plot_fig2():
     )
     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
     ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-3), arrowprops=arrowprops)
-    ax.text(1e-4, 6e-3, "Obs. noise level", fontdict=dict(fontsize=13, color="black", backgroundcolor="white"))
+    ax.text(9e-5, 6e-3, "Obs. noise scale", fontdict=dict(fontsize=13, color="black", backgroundcolor="white"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
     fig.savefig("figures/fig2.pdf", transparent=True)
@@ -465,7 +465,7 @@ def plot_fig6():
     )
     arrowprops = dict(arrowstyle="->", edgecolor="black", facecolor="black")
     ax.annotate("", xy=(2e-4, 2e-6), xytext=(2e-4, 3e-3), arrowprops=arrowprops)
-    ax.text(1e-4, 6e-3, "Obs. noise level", fontdict=dict(fontsize=13, color="black", backgroundcolor="white"))
+    ax.text(9e-5, 6e-3, "Obs. noise scale", fontdict=dict(fontsize=13, color="black", backgroundcolor="white"))
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
     fig.savefig("figures/fig6.pdf", transparent=True)
@@ -555,21 +555,45 @@ def plot_fig4():
     plt.close(fig)
 
 
+# def plot_fig7():
+#     """ 
+#     Plot Figure 7: time series for case4/r0-t3, m=14, RMSE metric.
+#     """
+#     print("Plot Figure 7: time series for case4/r0-t3, m=14, RMSE metric.")
+#     fig, ax = plt.subplots(1, 1, figsize=(8, 4), sharex=True)
+#     plot_time_series(
+#         data_dir="data/case4/r0-t3",
+#         target_m_list=[14],
+#         target_alpha_list=None,
+#         plot_type="mean",
+#         plot_ylabel=True,
+#         plot_legend=True,
+#         ax=ax,
+#         title="Expectation of RMSE",
+#         plot_per=5000,
+#     )
+#     fig.tight_layout()
+#     os.makedirs("figures", exist_ok=True)
+#     fig.savefig("figures/fig7.pdf", transparent=True)
+#     plt.close(fig)
+
 def plot_fig7():
     """ 
-    Plot Figure 7: time series for case4/r0-t3, m=14.
+    Plot Figure 7: time series for case4/r0-t3, m=14, SE metric.
     """
-    print("Plot Figure 7: time series for case4/r0-t3, m=14.")
+    print("Plot Figure 7: time series for case4/r0-t3, m=14, SE metric.")
+    data_dir = "data/case4/r0-t3"
     fig, ax = plt.subplots(1, 1, figsize=(8, 4), sharex=True)
     plot_time_series(
-        data_dir="data/case4/r0-t3",
+        data_dir=data_dir,
         target_m_list=[14],
         target_alpha_list=None,
         plot_type="mean",
+        plot_metric="SE",
         plot_ylabel=True,
         plot_legend=True,
         ax=ax,
-        title="Expectation of RMSE",
+        title="Expectation of SE",
         plot_per=5000,
     )
     fig.tight_layout()
@@ -577,7 +601,6 @@ def plot_fig7():
     fig.savefig("figures/fig7.pdf", transparent=True)
     plt.close(fig)
 
-# TODO: generate fig7-1
 
 # ========================
 # Main
