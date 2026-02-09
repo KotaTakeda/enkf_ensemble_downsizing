@@ -13,8 +13,8 @@ lines.markeredgewidth : 0.75
 ## font properties used by text.Text.  See
 ## http://matplotlib.org/api/font_manager_api.html for more
 ## information on font properties.
-font.family          : serif
-font.serif           : Arial
+font.family          : sans-serif  # fix to sans-serif according to the guide: https://www.nonlinear-processes-in-geophysics.net/submission.html#figurestables
+font.sans-serif      : Helvetica
 font.size            : 20.0
 
 #### TEXT
@@ -25,9 +25,9 @@ font.size            : 20.0
 
 #### LaTeX
 ## See http://wiki.scipy.org/Cookbook/Matplotlib/UsingTex
-text.usetex         : True
+text.usetex         : False
 text.latex.preamble : \usepackage{amsmath, amssymb} \usepackage{bm}
-mathtext.fontset    : cm # [dejavusans, dejavuserif, stix, stixsans, cm]
+mathtext.fontset    : dejavusans # fix to sans-serif according to the guide: https://www.nonlinear-processes-in-geophysics.net/submission.html#figurestables
 
 #### AXES
 ## default face and edge color, default tick sizes,
