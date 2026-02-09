@@ -269,7 +269,7 @@ def plot_time_series(
             # Compute metric
             se = np.sum((x_true_align[None, :, :] - xa_allk)**2, axis=-1) # (len(k_list), N)
             if plot_metric=="RMSE":
-                metric = np.mean(np.sqrt(se / J , axis=0)) # (N, )
+                metric = np.mean(np.sqrt(se / J) , axis=0) # (N, )
             elif plot_metric=="SE":
                 metric = np.mean(se, axis=0) # (N, )
             
@@ -555,27 +555,6 @@ def plot_fig4():
     plt.close(fig)
 
 
-# def plot_fig7():
-#     """ 
-#     Plot Figure 7: time series for case4/r0-t3, m=14, RMSE metric.
-#     """
-#     print("Plot Figure 7: time series for case4/r0-t3, m=14, RMSE metric.")
-#     fig, ax = plt.subplots(1, 1, figsize=(8, 4), sharex=True)
-#     plot_time_series(
-#         data_dir="data/case4/r0-t3",
-#         target_m_list=[14],
-#         target_alpha_list=None,
-#         plot_type="mean",
-#         plot_ylabel=True,
-#         plot_legend=True,
-#         ax=ax,
-#         title="Expectation of RMSE",
-#         plot_per=5000,
-#     )
-#     fig.tight_layout()
-#     os.makedirs("figures", exist_ok=True)
-#     fig.savefig("figures/fig7.pdf", transparent=True)
-#     plt.close(fig)
 
 def plot_fig7():
     """ 
@@ -608,7 +587,7 @@ def plot_fig7():
 
 if __name__ == "__main__":
     plot_fig2()
-    # plot_fig3()
-    # plot_fig4()
+    plot_fig3()
+    plot_fig4()
     plot_fig6()
-    # plot_fig7()
+    plot_fig7()
