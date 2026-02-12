@@ -99,7 +99,7 @@ root/
     - r0/
     - r1/
     - ...
-  - case4/          # varying N_spinup (Fig.B1)
+  - case4/          # large r and small dt (Fig.B1)
     - r0-t3
   - case1_lyapunov/ # For the LE analysis (Fig.1)
   - case3_lyapunov/ # For the LE analysis (Fig.5)
