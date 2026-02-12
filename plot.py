@@ -552,7 +552,7 @@ def plot_fig4():
     )
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig4.pdf", transparent=True)
+    fig.savefig("figures/fig4_new.pdf", transparent=True)
     plt.close(fig)
 
 
