@@ -201,18 +201,20 @@ def plot_time_series(
                 savename_xa_spinup = os.path.join(data_dir, f"xa_spinup-{i}{j}{k_seed}")
                 xa_dict = {"xa": savename_xa, "xa_spinup": savename_xa_spinup}
             # Load Xa time series
+            label = f"ETKF-{m_reduced} $\\alpha$={alpha}" # for plot legend
             xa = npload(xa_dict["xa"] + ".npy").mean(axis=1)  # (N, J)
             if os.path.exists(xa_dict["xa_spinup"] + ".npy"):
                 xa_spinup = npload(xa_dict["xa_spinup"] + ".npy")  # (N_spinup, m0, J)
                 if len(xa_spinup) > 0:
                     xa_spinup = xa_spinup.mean(axis=1)
                     xa = np.vstack([xa_spinup, xa])
+                    label = f"ETKF-reduce({m0}$\\rightarrow${m_reduced}) $\\alpha$={alpha}"
             # Compute RMSE
             rmse = np.linalg.norm(x_true - xa, axis=-1) / np.sqrt(J)
             ax.plot(
                 t,
                 rmse[::plot_per],
-                label=f"ETKF-reduce({m0}$\\rightarrow${m_reduced}) $\\alpha$={alpha}",
+                label=label,
                 lw=0.8,
                 marker=marker,
                 color=colors[j],
@@ -333,7 +335,7 @@ def plot_fig4():
     )
     fig.tight_layout()
     os.makedirs("figures", exist_ok=True)
-    fig.savefig("figures/fig4.pdf", transparent=True)
+    fig.savefig("figures/fig4_new.pdf", transparent=True)
     plt.close(fig)
 
 
