@@ -120,7 +120,7 @@ root/
 Each subfolder contains its own `set_params.py` and stores results in a consistent structure.
 An example of saved filename format: `xa_ijk.npy` (`i`->`m`, `j`->`alpha`, `k`->`seed`).
 
-### Parameters (TODO:)
+### Parameters
 
 The key parameters defined in `set_params.py`:
 

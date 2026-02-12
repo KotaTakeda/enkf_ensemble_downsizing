@@ -25,7 +25,6 @@ echo "All Lyapunov exponents are visualized."
 
 
 # copy figures
-# TODO: change figure names if needed
 cp data/case1_lyapunov/lyapunov_exponents.pdf figures/fig1.pdf
 cp data/case3_lyapunov/lyapunov_exponents.pdf figures/fig5.pdf
 echo "All figures are copied."
