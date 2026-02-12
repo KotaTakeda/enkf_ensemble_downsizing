@@ -6,6 +6,8 @@ This repository contains the implementation of the **Ensemble Kalman Filter (EnK
 > Kota Takeda and Takemasa Miyoshi,
 > under review.
 
+[![DOI](https://zenodo.org/badge/913588982.svg)](https://doi.org/10.5281/zenodo.17319854)
+
 ## Overview
 
 The purpose of this repository is to reproduce the EnKF numerical experiments in the above paper.  
