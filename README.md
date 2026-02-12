@@ -7,6 +7,7 @@ This repository contains the implementation of the **Ensemble Kalman Filter (EnK
 > under review.
 
 [![DOI](https://zenodo.org/badge/913588982.svg)](https://doi.org/10.5281/zenodo.17319854)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KotaTakeda/enkf_ensemble_downsizing/v1.1.1?urlpath=%2Fdoc%2Ftree%2Ftest.ipynb)
 
 ## Overview
 
