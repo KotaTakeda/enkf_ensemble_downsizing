@@ -15,11 +15,11 @@
 J = 40
 F = 8
 dt = 0.01
-N = 180 * 20 * 1  # Nature run period
+N = 270 * 20 * 1  # Nature run period
 obs_per = 5
 T_inf = N // obs_per // 2
-r = 1e-2  # Std. of obs. noise
+r = 1e-1  # Std. of obs. noise
 N_spinup = 45 * 20 // obs_per  # Ensemble spin-up
 m_reduced_list = [13, 14, 15]
 alpha_list = [1.1]
-seeds = [n for n in range(1)]
+seeds = [n for n in range(3)]

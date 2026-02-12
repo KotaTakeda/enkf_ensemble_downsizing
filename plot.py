@@ -300,7 +300,7 @@ import numpy as np
 import pyvista as pv
 from IPython.display import Video
 
-def animate_enkf_pyvista(x_true, x_esti, obs=None, 
+def animate_enkf(x_true, x_esti, obs=None, 
                          t_info=None,
                          filename="enkf_vis.mp4", 
                          tail_len=20, 
@@ -312,7 +312,8 @@ def animate_enkf_pyvista(x_true, x_esti, obs=None,
     
     # 1. Setup Data & Colors
     T, m, _ = x_esti.shape
-    x_mean = np.mean(x_esti, axis=1)
+    assert x_true.shape == (T, 3)
+    x_mean = np.mean(x_esti, axis=1) # (T, 3)
 
     style = {
         'true': 'blue',
@@ -409,15 +410,15 @@ def animate_enkf_pyvista(x_true, x_esti, obs=None,
         start = max(0, i - tail_len)
         end = i + 1
         
-        if end - start < 2: continue
+        if min(end, T) - start < 2: continue
 
         # Update Time Text
         if text_actor:
             current_time = t_start + i * dt_vis
             # Now text_actor is a vtkTextActor which has SetInput
             text_actor.SetInput(f"Time: {current_time:.2f}")
-
-        line_true.copy_from(pv.lines_from_points(x_true[start:end]))
+        line_tmp = pv.lines_from_points(x_true[start:end])
+        line_true.copy_from(line_tmp)
         line_mean.copy_from(pv.lines_from_points(x_mean[start:end]))
         
         for k, mesh in enumerate(ens_meshes):

@@ -73,7 +73,7 @@ python3 main.py --data_dir={data_dir_name}
 sh run_lyapunov.sh
 ```
 
-### Generate Fig.2, 3, 4, 6 (TODO:)
+### Generate Fig.2, 3, 4, 6, B1
 
 ```sh
 sh run_experiments.sh
@@ -81,7 +81,7 @@ sh run_experiments.sh
 
 ## Other information
 
-### Repository organization (TODO:)
+### Repository organization
 
 The repository is organized to allow reproduction of each figure in the manuscript.
 
@@ -93,9 +93,11 @@ root/
     - r1/
     - ...
   - case2/          # varying N_spinup (Fig.3,4)
-    - N0/
     - N0-r4/
-    - N1/
+    - N0-r4-acc/
+    - N1-r4/
+    - N1-r4-acc/
+    - ...
   - case3/          # F = 16, varying r (Fig.6)
     - r0/
     - r1/

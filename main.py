@@ -174,7 +174,7 @@ class OSSE:
                 X_0 = x_0 + np.random.multivariate_normal(
                     np.zeros_like(x_0), self.R*1e-2, self.m0
                 )  # (m0, dim_x) # accurate initialization with small spread 0.1 r
-                # TODO: spreadの大きさは要検討
+                # NOTE: choice of R*1e-2 is empirical here
             else:
                 x_0 = self.x_true[np.random.randint(len(self.x_true) - 1)]
                 P_0 = 25 * np.eye(self.J)
