@@ -176,10 +176,13 @@ cython_debug/
 *.pdf
 *.npy
 *.csv
+*.mp4
 data/*.md
 data/*/*.md
 data/case2-2
 data/case3-1
+data/case2/N0
+data/case2/N1
 
 # DS
 .DS_Store

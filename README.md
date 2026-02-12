@@ -2,12 +2,9 @@
 
 This repository contains the implementation of the **Ensemble Kalman Filter (EnKF)** with **ensemble downsizing**, developed for the paper:
 
-> _Quantifying the minimum ensemble size for asymptotic accuracy of the ensemble Kalman filter using the degrees of instability_,  
+> _Noise-scaled accuracy of the ensemble Kalman filter with an instability-based minimum ensemble size_,  
 > Kota Takeda and Takemasa Miyoshi,
 > under review.
-
-[![DOI](https://zenodo.org/badge/913588982.svg)](https://doi.org/10.5281/zenodo.17319854)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KotaTakeda/enkf_ensemble_downsizing/binder-test?urlpath=%2Fdoc%2Ftree%2Ftest.ipynb)
 
 ## Overview
 
@@ -73,7 +70,7 @@ python3 main.py --data_dir={data_dir_name}
 sh run_lyapunov.sh
 ```
 
-### Generate Fig.2, 3, 4, 6
+### Generate Fig.2, 3, 4, 6, B1
 
 ```sh
 sh run_experiments.sh
@@ -93,9 +90,11 @@ root/
     - r1/
     - ...
   - case2/          # varying N_spinup (Fig.3,4)
-    - N0/
     - N0-r4/
-    - N1/
+    - N0-r4-acc/
+    - N1-r4/
+    - N1-r4-acc/
+    - ...
   - case3/          # F = 16, varying r (Fig.6)
     - r0/
     - r1/
@@ -133,7 +132,7 @@ The key parameters defined in `set_params.py`:
 | $r$                                      | $10^0, 10^{-1}, \dots, 10^{-4}$ | Observation noise std.                      |
 | $n_{obs}$ (`obs_per`)                    | 5 (F=8), 2 (F=16)               | Observation interval (integration steps)    |
 | $N_{spinup}$                             | 720 (F=8), 1800 (F=16)          | Spin-up steps (assimilation steps)          |
-| $(\omega_k)_{k=1}^{n_{seeds}}$ (`seeds`) | 0,1, ..., 9                     | Random seeds                                |
+| $(\omega_k)\_{k=1}^{n\_{seeds}}$ (`seeds`) | 0,1, ..., 9                     | Random seeds                                |
 
 Others:
 

@@ -18,6 +18,17 @@ for N in 0 1; do
 done
 python main.py --data_dir data/case2/N0-r4
 
+# Case2: additional run for N1-r4 with m=14
+echo "Running Case 2 additional with m=14, N_spinup=720 and r=1e-4"
+python main.py --data_dir data/case2/N1-r4
+
+# Case2: additional run with accuract-initialization
+echo "Running Case 2 additional with m=14, r=1e-4, accuract-initialization"
+for N in 0 1; do
+    echo "Running Case 2 with N_spinup=$((720*N))"
+    python main.py --data_dir data/case2/N${N}-r4-acc
+done
+
 # Case 3: F=16, varying r
 for r in 0 1 2 3 4; do
     echo "Running Case 3 with r=10^$((-r))"
