@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 
 # C extensions
-*.so
+*/*.so
+*/*.c
 
 # Distribution / packaging
 .Python
@@ -170,8 +171,18 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+
 # data
-data/
+*.pdf
+*.npy
+*.csv
+*.mp4
+data/*.md
+data/*/*.md
+data/case2-2
+data/case3-1
+data/case2/N0
+data/case2/N1
 
 # DS
 .DS_Store
@@ -180,5 +191,8 @@ data/
 .vscode
 
 # shell scripts
-sh/
-*.sh
+# sh/
+# *.sh
+
+# Local Python
+.python-version

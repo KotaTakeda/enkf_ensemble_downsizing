@@ -6,7 +6,7 @@ from lorenz96_cython import lorenz96_cython
 from da.etkf import ETKF
 from util import load_params, reduce_by_svd, npsave, npload
 import pandas as pd
-from util import compute_edims
+from util import compute_edims, estimate_data_size
 import argparse
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
@@ -16,20 +16,20 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 # ============================
 
 
-def generate_trajectory(J, F, dt, N, data_dir=""):
+def generate_trajectory(J, F, dt, N, save_per, data_dir=""):
     # Model params
     print("(J, F):", (J, F))
-    
+
     # dt: time step size
     print(f"dt: {dt}")
 
     # N: number of time step, 1 year : 360*20
     print(f"N: {N}")
 
-    savename = f'{data_dir}/x_true_l96'
+    savename = f"{data_dir}/x_true_l96"
     try:
         x_true = npload(savename + ".npy", precision="float64")
-        print('x_true_l96 loaded')
+        print("x_true_l96 loaded")
     except FileNotFoundError:
         # Initial state near the stationary point
         x0 = F * np.ones(J)  # the stationary point
@@ -58,10 +58,10 @@ def generate_trajectory(J, F, dt, N, data_dir=""):
             result[n] = x[:]
 
         # save the result
-        x_true = result[::obs_per]  # save per
+        x_true = result[::save_per]  # save per
         npsave(savename, x_true, precision="float32")
         print("save", savename + ".npy")
-    
+
     print("x_true.shape", x_true.shape)
 
     return savename
@@ -86,6 +86,7 @@ class OSSE:
         seeds,
         data_dir="",
         savename_x_true=None,
+        accurate_initialization=False, # whether to use accurate initialization
     ):
         # Model parameters
         self.J = J
@@ -133,8 +134,12 @@ class OSSE:
         # Load true trajectory
         if savename_x_true is None:
             savename_x_true = generate_trajectory(
-                J, F, dt, N, data_dir=self.data_dir)
+                J, F, dt, N, save_per=obs_per, data_dir=self.data_dir
+            )
         self.x_true = npload(savename_x_true + ".npy", precision="float64")
+
+        # accurate initialization
+        self.accurate_initialization = accurate_initialization
 
     def M_cython(self, x, Dt):
         N = int(Dt / self.dt)
@@ -143,9 +148,13 @@ class OSSE:
         if Dt - N * self.dt > 0:
             x = rk4_cython(lorenz96_cython, 0, x, *self.p, Dt - N * self.dt)
         return x
-    
+
     def process(self, i, j, k, m_reduced, alpha, seed):
-        save_names = {"xa": self.savename.format("xa", i, j, k), "xa_spinup": self.savename.format("xa_spinup", i, j, k)}
+        save_names = {
+            "xa_spinup": self.savename.format("xa_spinup", i, j, k),
+            "xa": self.savename.format("xa", i, j, k),
+            "x0": self.savename.format("x0", i, j, k),
+        }
         try:
             npload(save_names["xa"] + ".npy", precision="float64")
             npload(save_names["xa_spinup"] + ".npy", precision="float64")
@@ -159,11 +168,19 @@ class OSSE:
             y += np.random.normal(loc=0, scale=self.r, size=y.shape)  # R = r^2*I
 
             # generate initial ensemble
-            x_0 = self.x_true[np.random.randint(len(self.x_true) - 1)]
-            P_0 = 25 * np.eye(self.J)
-            X_0 = x_0 + np.random.multivariate_normal(
-                np.zeros_like(x_0), P_0, self.m0
-            )  # (m0, dim_x)
+            if self.accurate_initialization:
+                x_0 = self.x_true[0] + np.random.multivariate_normal(
+                    np.zeros_like(self.x_true[0]), self.R*1e-2)
+                X_0 = x_0 + np.random.multivariate_normal(
+                    np.zeros_like(x_0), self.R*1e-2, self.m0
+                )  # (m0, dim_x) # accurate initialization with small spread 0.1 r
+                # NOTE: choice of R*1e-2 is empirical here
+            else:
+                x_0 = self.x_true[np.random.randint(len(self.x_true) - 1)]
+                P_0 = 25 * np.eye(self.J)
+                X_0 = x_0 + np.random.multivariate_normal(
+                    np.zeros_like(x_0), P_0, self.m0
+                )  # (m0, dim_x)
 
             # run spin-up
             print("spin-up")
@@ -174,15 +191,14 @@ class OSSE:
                 etkf.update(y_obs)
 
             # save spin-up data
+            npsave(save_names["x0"], etkf.X0, precision="float32")
             # npsave(self.savename.format("xf_spinup", i, j, k), etkf.Xf, precision="float32")
             npsave(save_names["xa_spinup"], etkf.Xa, precision="float32")
-            # Xa_spinup = etkf.Xa
 
             # reduce ensemble
             X_reduced = reduce_by_svd(etkf.X, m_reduced)  # by SVD
             # X_reduced = reduce_by_sample(etkf.X, m_reduced) # by random sampling
             etkf.initialize(X_reduced)
-            # etkf.alpha = 1.0
             print("assimilation")
             for y_obs in tqdm(y[self.N_spinup :]):
                 etkf.forecast(self.Dt)
@@ -193,7 +209,7 @@ class OSSE:
             npsave(save_names["xa"], etkf.Xa, precision="float32")
 
             del etkf
-        return save_names # FIXME: high memory usage
+        return save_names  # FIXME: high memory usage
 
     # Run OSSE
     def run(self, parallel="none"):
@@ -219,7 +235,11 @@ class OSSE:
         else:
             max_workers = 4  # Set the number of workers
             executor = (
-                ProcessPoolExecutor(max_workers=max_workers) if parallel == "mp" else ThreadPoolExecutor(max_workers=max_workers)  # Multi-threading is not supported in this case
+                ProcessPoolExecutor(max_workers=max_workers)
+                if parallel == "mp"
+                else ThreadPoolExecutor(
+                    max_workers=max_workers
+                )  # Multi-threading is not supported in this case
             )
             with executor as exe:
                 features = []
@@ -249,8 +269,7 @@ class OSSE:
                         param_list[i]["seed"],
                     )
 
-        return Xa_dict, param_dict # FIXME: high memory usage
-    
+        return Xa_dict, param_dict  # FIXME: high memory usage
 
     # NOTE: E[se]/J \ge E[RMSE]^2
     def summarize_results(self, T_inf):
@@ -258,12 +277,25 @@ class OSSE:
         T_inf: (int > 0): compute sup/mean of the errors after t=T_inf, e.g. sup_t(E[SE[T_inf:]]).
         """
         try:
-            df_sup_se = pd.read_csv(f"{self.data_dir}/sup_se.csv", index_col=0, header=0)
-            df_mean_se = pd.read_csv(f"{self.data_dir}/mean_se.csv", index_col=0, header=0)
-            df_sup_rmse = pd.read_csv(f"{self.data_dir}/sup_rmse.csv", index_col=0, header=0)
-            df_mean_rmse = pd.read_csv(f"{self.data_dir}/mean_rmse.csv", index_col=0, header=0)
+            df_sup_se = pd.read_csv(
+                f"{self.data_dir}/sup_se.csv", index_col=0, header=0
+            )
+            df_mean_se = pd.read_csv(
+                f"{self.data_dir}/mean_se.csv", index_col=0, header=0
+            )
+            df_sup_rmse = pd.read_csv(
+                f"{self.data_dir}/sup_rmse.csv", index_col=0, header=0
+            )
+            df_mean_rmse = pd.read_csv(
+                f"{self.data_dir}/mean_rmse.csv", index_col=0, header=0
+            )
             # df_ensdim = pd.read_csv(f"{self.data_dir}/ensdim.csv", index_col=0, header=0)
         except FileNotFoundError:
+            m_reduced_list = self.m_reduced_list
+            alpha_list = self.alpha_list
+            seeds = self.seeds
+            N_spinup = self.N_spinup
+
             sup_se = np.zeros((len(m_reduced_list), len(alpha_list)))
             mean_se = np.zeros((len(m_reduced_list), len(alpha_list)))
             sup_rmse = np.zeros((len(m_reduced_list), len(alpha_list)))
@@ -276,13 +308,19 @@ class OSSE:
                     # rmse_tmp = []
                     # traceP_tmp = []
                     # ensdim_tmp = []
-                    print(i, j)
+                    # print(i, j)
                     for k, _ in enumerate(seeds):
-                        Xa = npload(self.savename.format("xa", i, j, k) + ".npy", precision="float64")
-                        se_tail = np.sum((self.x_true[N_spinup:] - Xa.mean(axis=1))[T_inf:] ** 2, axis=-1)
+                        Xa = npload(
+                            self.savename.format("xa", i, j, k) + ".npy",
+                            precision="float64",
+                        )
+                        se_tail = np.sum(
+                            (self.x_true[N_spinup:] - Xa.mean(axis=1))[T_inf:] ** 2,
+                            axis=-1,
+                        )  # (T - T_inf,)
 
                         # SE
-                        se_tmp.append(se_tail)  # (T,)
+                        se_tmp.append(se_tail) 
 
                         # RMSE
                         # assert np.allclose(np.sqrt(se_tail), np.linalg.norm(e[T_inf:], axis=-1))  # test
@@ -296,12 +334,12 @@ class OSSE:
 
                         del Xa
 
-                    se_tmp = np.array(se_tmp)  # (m, T - T_inf)
+                    se_tmp = np.array(se_tmp)  # (len(seeds), T - T_inf)
                     # assert np.allclose(np.sqrt(se_tmp / J), rmse_tmp)
 
-                    sup_se[i, j] = np.max(np.mean(se_tmp, axis=0), axis=0)  # sup_t(E[SE])
+                    sup_se[i, j] = np.max(np.mean(se_tmp, axis=0))  # sup_t(E[SE])
                     mean_se[i, j] = np.mean(se_tmp)  # mean_t(E[SE])
-                    sup_rmse[i, j] = np.max(np.mean(np.sqrt(se_tmp / self.J), axis=0), axis=0)  # sup_t(E[RMSE])
+                    sup_rmse[i, j] = np.max(np.mean(np.sqrt(se_tmp / self.J), axis=0))  # sup_t(E[RMSE])
                     mean_rmse[i, j] = np.mean(np.sqrt(se_tmp / self.J))  # mean_t(E[RMSE])
                     # traceP[i, j] = np.mean(traceP_tmp)  # E[mean_t(tr(Pa))]
                     # ensdim[i, j] = np.mean(ensdim_tmp)  # E[mean_t(D_ens)]
@@ -310,8 +348,12 @@ class OSSE:
 
             df_sup_se = pd.DataFrame(sup_se, index=m_reduced_list, columns=alpha_list)
             df_mean_se = pd.DataFrame(mean_se, index=m_reduced_list, columns=alpha_list)
-            df_sup_rmse = pd.DataFrame(sup_rmse, index=m_reduced_list, columns=alpha_list)
-            df_mean_rmse = pd.DataFrame(mean_rmse, index=m_reduced_list, columns=alpha_list)
+            df_sup_rmse = pd.DataFrame(
+                sup_rmse, index=m_reduced_list, columns=alpha_list
+            )
+            df_mean_rmse = pd.DataFrame(
+                mean_rmse, index=m_reduced_list, columns=alpha_list
+            )
             # df_traceP = pd.DataFrame(traceP, index=m_reduced_list, columns=alpha_list)
             # df_ensdim = pd.DataFrame(ensdim, index=m_reduced_list, columns=alpha_list)
 
@@ -337,6 +379,8 @@ if __name__ == "__main__":
 
     # Use the function to load the parameters
     set_params = load_params(data_dir)
+    total_size_gb = estimate_data_size(set_params)
+    print(f"Estimated data size: {total_size_gb:.2f} GB")
 
     # Access the parameters
     J = set_params.J
@@ -350,8 +394,9 @@ if __name__ == "__main__":
     m_reduced_list = set_params.m_reduced_list
     alpha_list = set_params.alpha_list
     seeds = set_params.seeds
+    accurate_initialization = getattr(set_params, 'accurate_initialization', False)
 
-    savename_x_true = generate_trajectory(J, F, dt, N, data_dir)
+    savename_x_true = generate_trajectory(J, F, dt, N, obs_per, data_dir)
 
     osse = OSSE(
         J,
@@ -365,6 +410,7 @@ if __name__ == "__main__":
         seeds,
         data_dir=data_dir,
         savename_x_true=savename_x_true,
+        accurate_initialization=accurate_initialization,
     )
     _ = osse.run(parallel=parallel)
     _ = osse.summarize_results(T_inf)
