@@ -1,10 +1,11 @@
 # EnKF with Ensemble Downsizing
 
-This repository contains the implementation of the **Ensemble Kalman Filter (EnKF)** with **ensemble downsizing**, developed for the paper:
+This repository contains the implementation of the **Ensemble Kalman Filter (EnKF)** with the **ensemble downsizing**, developed for the paper:
 
-> _Noise-scaled accuracy of the ensemble Kalman filter with an instability-based minimum ensemble size_,  
-> Kota Takeda and Takemasa Miyoshi,
-> under review.
+> K. Takeda and T. Miyoshi, _Noise-scaled accuracy of the ensemble Kalman filter with an instability-based minimum ensemble size_, Nonlinear Processes in Geophysics 33, 335–346, 2026.
+> DOI: https://doi.org/10.5194/npg-33-335-2026.
+
+Reproduction code:
 
 [![DOI](https://zenodo.org/badge/913588982.svg)](https://doi.org/10.5281/zenodo.17319854)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KotaTakeda/enkf_ensemble_downsizing/v1.1.1?urlpath=%2Fdoc%2Ftree%2Ftest.ipynb)
