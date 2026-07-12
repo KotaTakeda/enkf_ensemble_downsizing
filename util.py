@@ -65,25 +65,53 @@ def estimate_data_size(params):
 
 # Ensemble reduction
 def reduce_by_svd(X, m_reduced, method="helmert"):
-    """
-    Reduce the ensemble size using SVD.
-    If method="helmert", the reduction keeps the ensemble mean.
+    """Reduce an ensemble using a truncated singular value decomposition.
+
+    The default Helmert construction preserves the ensemble mean and the
+    sample covariance represented by the retained singular vectors.
+
     Args:
-        X: (m, Nx) array of ensemble vectors
-        m_reduced: reduced ensemble size
-        method: "helmert" or None. 
+        X: ``(m, Nx)`` array of ensemble vectors.
+        m_reduced: Reduced ensemble size. Must satisfy ``2 <= m_reduced <= m``.
+        method: ``"helmert"`` (default) or ``None``. ``None`` returns the
+            unscaled principal-component ensemble used by earlier versions.
+
     Returns:
-        X_reduced: (m_reduced, Nx) array of reduced ensemble vectors
+        A ``(m_reduced, Nx)`` array of reduced ensemble vectors.
+
+    Raises:
+        ValueError: If the input shape, reduced size, or method is invalid.
     """
-    # m, Nx = X.shape
+    X = np.asarray(X)
+    if X.ndim != 2:
+        raise ValueError("X must be a two-dimensional array")
+
+    m, _ = X.shape
+    if isinstance(m_reduced, (bool, np.bool_)) or not isinstance(
+        m_reduced, (int, np.integer)
+    ):
+        raise ValueError("m_reduced must be an integer")
+    if not 2 <= m_reduced <= m:
+        raise ValueError("m_reduced must satisfy 2 <= m_reduced <= X.shape[0]")
+    if method not in ("helmert", None):
+        raise ValueError('method must be "helmert" or None')
+
     xmean = X.mean(axis=0)
     dX = X - xmean[None, :]
     U, S, _ = sp.linalg.svd(dX.T)
-    if method=="helmert":
-        Q = sp.linalg.helmert(m_reduced) #(m_reduced - 1, m_reduced)
-        dX_reduced = U[:, :m_reduced-1] @ np.diag(S[:m_reduced-1]) @ Q # (Nx, m_reduced), mean zero
+    if method == "helmert":
+        n_modes = m_reduced - 1
+        Q = sp.linalg.helmert(m_reduced)  # (n_modes, m_reduced)
+        covariance_scale = np.sqrt(n_modes / (m - 1))
+        retained_modes = min(n_modes, S.size)
+        components = np.zeros((X.shape[1], n_modes), dtype=S.dtype)
+        components[:, :retained_modes] = (
+            U[:, :retained_modes] * S[:retained_modes]
+        )
+        dX_reduced = covariance_scale * components @ Q
+        # dX_reduced has shape (Nx, m_reduced) and zero column mean.
     else:
-        dX_reduced = U[:, :m_reduced] @ np.diag(S[:m_reduced])  # (Nx, m_reduced), principal components
+        dX_reduced = U[:, :m_reduced] * S[:m_reduced]
     X_reduced = xmean[None, :] + dX_reduced.T
     return X_reduced
 

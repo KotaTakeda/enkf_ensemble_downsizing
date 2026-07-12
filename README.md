@@ -8,7 +8,7 @@ This repository contains the implementation of the **Ensemble Kalman Filter (EnK
 Reproduction code:
 
 [![DOI](https://zenodo.org/badge/913588982.svg)](https://doi.org/10.5281/zenodo.17319854)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KotaTakeda/enkf_ensemble_downsizing/v1.1.1?urlpath=%2Fdoc%2Ftree%2Ftest.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KotaTakeda/enkf_ensemble_downsizing/v1.2.0?urlpath=%2Fdoc%2Ftree%2Ftest.ipynb)
 
 ## Overview
 
@@ -48,6 +48,17 @@ https://github.com/KotaTakeda/lyapunov
 ## Usage
 
 Run `test.ipynb` or a script as follows.
+
+### Ensemble reduction by SVD
+
+`util.reduce_by_svd(X, m_reduced)` reduces an ensemble of shape `(m, Nx)`.
+The default `method="helmert"` preserves the original ensemble mean and the
+sample covariance in the subspace spanned by the leading `m_reduced - 1`
+left singular vectors. Here, sample covariance uses the conventional
+normalization by `m - 1` before reduction and by `m_reduced - 1` afterward.
+Set `method=None` to use the unscaled principal-component construction from
+earlier releases; this legacy construction does not preserve the ensemble
+mean.
 
 ### 1. Prepare a data directory
 
