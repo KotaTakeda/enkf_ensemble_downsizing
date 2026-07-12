@@ -1,13 +1,14 @@
 # EnKF with Ensemble Downsizing
 
-This repository contains the implementation of the **Ensemble Kalman Filter (EnKF)** with **ensemble downsizing**, developed for the paper:
+This repository contains the implementation of the **Ensemble Kalman Filter (EnKF)** with the **ensemble downsizing**, developed for the paper:
 
-> _Noise-scaled accuracy of the ensemble Kalman filter with an instability-based minimum ensemble size_,  
-> Kota Takeda and Takemasa Miyoshi,
-> under review.
+> K. Takeda and T. Miyoshi, _Noise-scaled accuracy of the ensemble Kalman filter with an instability-based minimum ensemble size_, Nonlinear Processes in Geophysics 33, 335–346, 2026.
+> DOI: https://doi.org/10.5194/npg-33-335-2026.
+
+Reproduction code:
 
 [![DOI](https://zenodo.org/badge/913588982.svg)](https://doi.org/10.5281/zenodo.17319854)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KotaTakeda/enkf_ensemble_downsizing/v1.1.1?urlpath=%2Fdoc%2Ftree%2Ftest.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/KotaTakeda/enkf_ensemble_downsizing/v1.2.0?urlpath=%2Fdoc%2Ftree%2Ftest.ipynb)
 
 ## Overview
 
@@ -41,9 +42,23 @@ cd lorenz96_cython
 python setup.py build_ext --inplace
 ```
 
+## Computing Lyapunov exponents
+https://github.com/KotaTakeda/lyapunov
+
 ## Usage
 
 Run `test.ipynb` or a script as follows.
+
+### Ensemble reduction by SVD
+
+`util.reduce_by_svd(X, m_reduced)` reduces an ensemble of shape `(m, Nx)`.
+The default `method="helmert"` preserves the original ensemble mean and the
+sample covariance in the subspace spanned by the leading `m_reduced - 1`
+left singular vectors. Here, sample covariance uses the conventional
+normalization by `m - 1` before reduction and by `m_reduced - 1` afterward.
+Set `method=None` to use the unscaled principal-component construction from
+earlier releases; this legacy construction does not preserve the ensemble
+mean.
 
 ### 1. Prepare a data directory
 
